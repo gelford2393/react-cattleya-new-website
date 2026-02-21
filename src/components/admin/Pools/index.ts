@@ -1,2 +1,2 @@
 export * from "./PoolsRates";
-export * from "./PoolDetailsPage";
+export * from "./PoolEditorForm";

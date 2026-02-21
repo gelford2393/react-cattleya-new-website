@@ -14,7 +14,10 @@ import { useGetPools } from "@/hooks/useGetPools";
 import { useCMSStore } from "@/store/useCMSStore";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { poolRatesFormSchema, type PoolRatesFormValues } from "./_config";
+import {
+  poolRatesFormSchema,
+  type PoolRatesFormValues,
+} from "./_config";
 import { useUpdatePoolRates } from "@/hooks/useUpdatePoolRates";
 
 type PoolRecord = {
@@ -35,7 +38,7 @@ const defaultValues: PoolRatesFormValues = {
   nightRate: 0,
 };
 
-export const PoolForm: FC = () => {
+export const PoolRatesSheetForm: FC = () => {
   const isOpen = useCMSStore((state) => state.isPoolSheetOpen);
   const editingPoolId = useCMSStore((state) => state.editingPoolId);
   const closePoolSheet = useCMSStore((state) => state.closePoolSheet);
@@ -101,12 +104,10 @@ export const PoolForm: FC = () => {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            Configure Pools & Rates{" "}
-            {selectedPool ? `(#${selectedPool.pool_number})` : ""}
+            Configure Pools & Rates {selectedPool ? `(#${selectedPool.pool_number})` : ""}
           </SheetTitle>
           <SheetDescription>
-            Update summary fields only: name, capacity, day rate, and night
-            rate.
+            Update summary fields only: name, capacity, day rate, and night rate.
           </SheetDescription>
         </SheetHeader>
 
@@ -184,4 +185,4 @@ export const PoolForm: FC = () => {
   );
 };
 
-export default PoolForm;
+export default PoolRatesSheetForm;

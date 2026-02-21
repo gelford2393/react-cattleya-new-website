@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Dashboard } from "./components/admin/Dashboard";
-import { PoolDetailsPage, PoolsRates } from "./components/admin/Pools";
 import { AdminLayout } from "./layouts/Admin";
+import { PoolsLayout, PoolsPage } from "./pages/admin/Pools";
+import { PoolsEditLayout, PoolsEditPage } from "./pages/admin/Pools/edit";
 
 function App() {
   return (
@@ -11,8 +12,12 @@ function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="pools-rates" element={<PoolsRates />} />
-        <Route path="pools/:poolId" element={<PoolDetailsPage />} />
+        <Route path="pools-rates" element={<PoolsLayout />}>
+          <Route index element={<PoolsPage />} />
+        </Route>
+        <Route path="pools/:poolId/edit" element={<PoolsEditLayout />}>
+          <Route index element={<PoolsEditPage />} />
+        </Route>
       </Route>
     </Routes>
   );

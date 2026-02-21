@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { poolFormSchema, type PoolFormValues } from "./_config";
+import {
+  normalizeStringArray,
+  poolFormSchema,
+  type PoolFormValues,
+} from "./_config";
 import { useGetPoolById } from "@/hooks/useGetPoolById";
 import { useUpdatePool } from "@/hooks/useUpdatePool";
 import { poolService } from "@/services/PoolServices/poolServices";
@@ -33,7 +37,7 @@ const defaultValues: PoolFormValues = {
   gallery: [],
 };
 
-export function PoolDetailsPage() {
+export function PoolEditorForm() {
   const { poolId } = useParams();
   const { data: pool, isLoading, error } = useGetPoolById(poolId);
   const updatePoolMutation = useUpdatePool();
@@ -82,14 +86,6 @@ export function PoolDetailsPage() {
     });
   };
 
-  const normalizeStringArray = (value: unknown): string[] => {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value.filter((item): item is string => typeof item === "string");
-  };
-
   useEffect(() => {
     const selectedPool = pool as PoolRecord | undefined;
 
@@ -121,7 +117,11 @@ export function PoolDetailsPage() {
 
     try {
       setIsUploadingCover(true);
-      const uploadedUrl = await poolService.uploadPoolImage(file, poolId, "cover");
+      const uploadedUrl = await poolService.uploadPoolImage(
+        file,
+        poolId,
+        "cover",
+      );
       setValue("coverImageUrl", uploadedUrl, {
         shouldDirty: true,
         shouldValidate: true,
@@ -146,7 +146,9 @@ export function PoolDetailsPage() {
       setIsUploadingGallery(true);
 
       const uploadedUrls = await Promise.all(
-        files.map((file) => poolService.uploadPoolImage(file, poolId, "gallery")),
+        files.map((file) =>
+          poolService.uploadPoolImage(file, poolId, "gallery"),
+        ),
       );
 
       setValue("gallery", [...(galleryImages ?? []), ...uploadedUrls], {
@@ -186,7 +188,8 @@ export function PoolDetailsPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Pool Editor</h2>
           <p className="text-sm text-muted-foreground">
-            Editing {selectedPool ? `Pool #${selectedPool.pool_number}` : "Pool"}
+            Editing{" "}
+            {selectedPool ? `Pool #${selectedPool.pool_number}` : "Pool"}
           </p>
         </div>
         <Button variant="outline" asChild>
@@ -217,7 +220,9 @@ export function PoolDetailsPage() {
                 {...register("capacity", { valueAsNumber: true })}
               />
               {errors.capacity && (
-                <p className="text-xs text-red-500">{errors.capacity.message}</p>
+                <p className="text-xs text-red-500">
+                  {errors.capacity.message}
+                </p>
               )}
             </div>
 
@@ -245,7 +250,9 @@ export function PoolDetailsPage() {
                 {...register("nightRate", { valueAsNumber: true })}
               />
               {errors.nightRate && (
-                <p className="text-xs text-red-500">{errors.nightRate.message}</p>
+                <p className="text-xs text-red-500">
+                  {errors.nightRate.message}
+                </p>
               )}
             </div>
           </div>
@@ -253,7 +260,12 @@ export function PoolDetailsPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Amenities</label>
-              <Button type="button" variant="outline" size="sm" onClick={() => appendAmenity("")}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendAmenity("")}
+              >
                 Add Amenity
               </Button>
             </div>
@@ -329,7 +341,9 @@ export function PoolDetailsPage() {
               disabled={isUploadingGallery}
             />
             {isUploadingGallery && (
-              <p className="text-xs text-blue-600">Uploading gallery images...</p>
+              <p className="text-xs text-blue-600">
+                Uploading gallery images...
+              </p>
             )}
 
             <div className="grid grid-cols-2 gap-2">
@@ -338,7 +352,9 @@ export function PoolDetailsPage() {
                   key={`gallery-${index}`}
                   className="rounded-md border border-slate-200 p-2 space-y-2"
                 >
-                  <div className="text-[11px] font-medium text-slate-500">#{index + 1}</div>
+                  <div className="text-[11px] font-medium text-slate-500">
+                    #{index + 1}
+                  </div>
                   <img
                     src={imageUrl}
                     alt={`Gallery ${index + 1}`}

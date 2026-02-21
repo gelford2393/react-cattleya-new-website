@@ -1,11 +1,11 @@
-import { PoolsDataList } from "./PoolsDataList";
-import { PoolForm } from "./PoolForm";
+import { PoolRatesTable } from "./PoolRatesTable";
+import { PoolRatesSheetForm } from "./PoolRatesSheetForm";
 
 export function PoolsRates() {
   return (
     <>
-      <PoolsDataList />
-      <PoolForm />
+      <PoolRatesTable />
+      <PoolRatesSheetForm />
     </>
   );
 }

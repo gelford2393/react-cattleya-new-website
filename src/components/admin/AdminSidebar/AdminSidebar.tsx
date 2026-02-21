@@ -59,7 +59,7 @@ export function AdminSidebar() {
               {pools?.map((pool) => (
                 <SidebarMenuItem key={pool.id}>
                   <SidebarMenuButton asChild tooltip={pool.name}>
-                    <NavLink to={`/admin/pools/${pool.id}`}>
+                    <NavLink to={`/admin/pools/${pool.id}/edit`}>
                       <span className="truncate text-xs">
                         Pool {pool.pool_number}: {pool.name}
                       </span>

@@ -1,4 +1,4 @@
-import type { PoolRatesFormValues } from "@/components/admin/Pools/poolRatesFormConfig";
+import type { PoolRatesFormValues } from "@/components/admin/Pools/_config";
 import { poolService } from "@/services/PoolServices/poolServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

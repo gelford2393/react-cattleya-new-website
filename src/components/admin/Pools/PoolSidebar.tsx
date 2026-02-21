@@ -60,8 +60,8 @@ export default function PoolSidebar() {
             (pools as PoolSummary[] | undefined)?.map((pool) => (
               <SheetClose asChild key={pool.id}>
                 <Link
-                  to={`/admin/pools/${pool.id}`}
-                  className={`block rounded-md border px-3 py-2 text-sm transition-colors ${isActive(`/admin/pools/${pool.id}`)}`}
+                  to={`/admin/pools/${pool.id}/edit`}
+                  className={`block rounded-md border px-3 py-2 text-sm transition-colors ${isActive(`/admin/pools/${pool.id}/edit`)}`}
                 >
                   Pool #{pool.pool_number} - {pool.name}
                 </Link>
