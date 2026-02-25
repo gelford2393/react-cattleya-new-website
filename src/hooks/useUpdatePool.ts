@@ -1,6 +1,7 @@
 import { poolService } from "@/services/PoolServices/poolServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PoolFormValues } from "@/components/admin/Pools/_config";
+import { toast } from "sonner";
 
 type UpdatePoolPayload = {
   id: string;
@@ -34,6 +35,12 @@ export function useUpdatePool() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["pools"] });
+      toast.success("Pool updated successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        `Failed to update pool: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     },
   });
 }

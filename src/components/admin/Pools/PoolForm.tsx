@@ -7,6 +7,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from "@/components/ui/field";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { type FC, useEffect } from "react";
@@ -97,90 +104,87 @@ export const PoolForm: FC = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>
-            Configure Pools & Rates{" "}
-            {selectedPool ? `(#${selectedPool.pool_number})` : ""}
-          </SheetTitle>
-          <SheetDescription>
-            Update summary fields only: name, capacity, day rate, and night
-            rate.
-          </SheetDescription>
-        </SheetHeader>
+    <>
+      <Sheet open={isOpen} onOpenChange={onOpenChange}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              Configure Pools & Rates{" "}
+              {selectedPool ? `(#${selectedPool.pool_number})` : ""}
+            </SheetTitle>
+            <SheetDescription>
+              Update summary fields only: name, capacity, day rate, and night
+              rate.
+            </SheetDescription>
+          </SheetHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="px-4 space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Pool Name
-            </label>
-            <Input id="name" {...register("name")} />
-            {errors.name && (
-              <p className="text-xs text-red-500">{errors.name.message}</p>
+          <form onSubmit={handleSubmit(onSubmit)} className="px-4 space-y-4">
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="name" className="text-sm font-medium">
+                  Pool Name
+                </FieldLabel>
+                <Input id="name" {...register("name")} />
+                <FieldError errors={errors.name ? [errors.name] : []} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="capacity" className="text-sm font-medium">
+                  Capacity (pax)
+                </FieldLabel>
+                <Input
+                  id="capacity"
+                  type="number"
+                  {...register("capacity", { valueAsNumber: true })}
+                />
+                <FieldError errors={errors.capacity ? [errors.capacity] : []} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="dayRate" className="text-sm font-medium">
+                  Day Rate
+                </FieldLabel>
+                <Input
+                  id="dayRate"
+                  type="number"
+                  {...register("dayRate", { valueAsNumber: true })}
+                />
+                <FieldError errors={errors.dayRate ? [errors.dayRate] : []} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="nightRate" className="text-sm font-medium">
+                  Night Rate
+                </FieldLabel>
+                <Input
+                  id="nightRate"
+                  type="number"
+                  {...register("nightRate", { valueAsNumber: true })}
+                />
+                <FieldError
+                  errors={errors.nightRate ? [errors.nightRate] : []}
+                />
+              </Field>
+            </FieldGroup>
+
+            {updatePoolRatesMutation.error instanceof Error && (
+              <p className="text-sm text-red-500">
+                Failed to save: {updatePoolRatesMutation.error.message}
+              </p>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <label htmlFor="capacity" className="text-sm font-medium">
-              Capacity (pax)
-            </label>
-            <Input
-              id="capacity"
-              type="number"
-              {...register("capacity", { valueAsNumber: true })}
-            />
-            {errors.capacity && (
-              <p className="text-xs text-red-500">{errors.capacity.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="dayRate" className="text-sm font-medium">
-              Day Rate
-            </label>
-            <Input
-              id="dayRate"
-              type="number"
-              {...register("dayRate", { valueAsNumber: true })}
-            />
-            {errors.dayRate && (
-              <p className="text-xs text-red-500">{errors.dayRate.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="nightRate" className="text-sm font-medium">
-              Night Rate
-            </label>
-            <Input
-              id="nightRate"
-              type="number"
-              {...register("nightRate", { valueAsNumber: true })}
-            />
-            {errors.nightRate && (
-              <p className="text-xs text-red-500">{errors.nightRate.message}</p>
-            )}
-          </div>
-
-          {updatePoolRatesMutation.error instanceof Error && (
-            <p className="text-sm text-red-500">
-              Failed to save: {updatePoolRatesMutation.error.message}
-            </p>
-          )}
-
-          <SheetFooter className="px-0">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={updatePoolRatesMutation.isPending}
-            >
-              {updatePoolRatesMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+            <SheetFooter className="px-0">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={updatePoolRatesMutation.isPending}
+              >
+                {updatePoolRatesMutation.isPending
+                  ? "Saving..."
+                  : "Save Changes"}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 };
 

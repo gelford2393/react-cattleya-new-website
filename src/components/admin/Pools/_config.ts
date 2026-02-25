@@ -1,5 +1,19 @@
 import * as yup from "yup";
 
+export type PoolRecord = {
+  id: string;
+  pool_number: number;
+  name: string;
+  capacity: number | null;
+  amenities?: string[] | null;
+  cover_image_url?: string | null;
+  gallery?: string[] | null;
+  rates?: {
+    day?: number;
+    night?: number;
+  } | null;
+};
+
 export const poolFormSchema = yup
   .object({
     name: yup.string().trim().required("Pool name is required"),

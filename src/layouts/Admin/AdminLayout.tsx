@@ -14,6 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { AdminSidebar } from "@/components/admin/AdminSidebar/AdminSidebar";
 import { Outlet } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
 
 export function AdminLayout() {
   return (
@@ -43,6 +44,7 @@ export function AdminLayout() {
             <Outlet />
           </div>
         </div>
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldLabel } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   normalizeStringArray,
   poolFormSchema,
   type PoolFormValues,
+  type PoolRecord,
 } from "./_config";
 import { useGetPoolById } from "@/hooks/useGetPoolById";
 import { useUpdatePool } from "@/hooks/useUpdatePool";
@@ -12,20 +15,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useParams } from "react-router-dom";
-
-type PoolRecord = {
-  id: string;
-  pool_number: number;
-  name: string;
-  capacity: number | null;
-  amenities?: string[] | null;
-  cover_image_url?: string | null;
-  gallery?: string[] | null;
-  rates?: {
-    day?: number;
-    night?: number;
-  } | null;
-};
+import { toast } from "sonner";
 
 const defaultValues: PoolFormValues = {
   name: "",
@@ -128,9 +118,11 @@ export function PoolEditorForm() {
       });
     } catch (uploadError) {
       console.error(uploadError);
+      toast.error("Failed to upload cover image. Please try again.");
     } finally {
       setIsUploadingCover(false);
       event.target.value = "";
+      toast.success("Cover image uploaded successfully!");
     }
   };
 
@@ -157,9 +149,11 @@ export function PoolEditorForm() {
       });
     } catch (uploadError) {
       console.error(uploadError);
+      toast.error("Failed to upload gallery images. Please try again.");
     } finally {
       setIsUploadingGallery(false);
       event.target.value = "";
+      toast.success("Gallery images uploaded successfully!");
     }
   };
 
@@ -172,7 +166,29 @@ export function PoolEditorForm() {
   };
 
   if (isLoading) {
-    return <div className="p-6 text-blue-600">Loading pool details...</div>;
+    return (
+      <div className="p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-1/2 mb-2" />
+          <Skeleton className="h-4 w-1/3 mb-4" />
+          <div className="rounded-xl border bg-white p-4 space-y-4">
+            <Skeleton className="h-10 w-full mb-2" />
+            <div className="grid gap-4 md:grid-cols-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full mt-4" />
+            <Skeleton className="h-32 w-32 mt-4" />
+            <div className="flex gap-2 mt-4">
+              <Skeleton className="h-32 w-32" />
+              <Skeleton className="h-32 w-32" />
+              <Skeleton className="h-32 w-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -200,9 +216,9 @@ export function PoolEditorForm() {
       <div className="rounded-xl border bg-white p-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
+            <FieldLabel htmlFor="name" className="text-sm font-medium">
               Pool Name
-            </label>
+            </FieldLabel>
             <Input id="name" {...register("name")} />
             {errors.name && (
               <p className="text-xs text-red-500">{errors.name.message}</p>
@@ -211,9 +227,9 @@ export function PoolEditorForm() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <label htmlFor="capacity" className="text-sm font-medium">
+              <FieldLabel htmlFor="capacity" className="text-sm font-medium">
                 Capacity (pax)
-              </label>
+              </FieldLabel>
               <Input
                 id="capacity"
                 type="number"
@@ -227,9 +243,9 @@ export function PoolEditorForm() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="dayRate" className="text-sm font-medium">
+              <FieldLabel htmlFor="dayRate" className="text-sm font-medium">
                 Day Rate
-              </label>
+              </FieldLabel>
               <Input
                 id="dayRate"
                 type="number"
@@ -241,9 +257,9 @@ export function PoolEditorForm() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="nightRate" className="text-sm font-medium">
+              <FieldLabel htmlFor="nightRate" className="text-sm font-medium">
                 Night Rate
-              </label>
+              </FieldLabel>
               <Input
                 id="nightRate"
                 type="number"
@@ -259,15 +275,7 @@ export function PoolEditorForm() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Amenities</label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendAmenity("")}
-              >
-                Add Amenity
-              </Button>
+              <FieldLabel className="text-sm font-medium">Amenities</FieldLabel>
             </div>
 
             {(amenitiesValues ?? []).map((_, index) => (
@@ -278,7 +286,7 @@ export function PoolEditorForm() {
                 />
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
                   onClick={() => removeAmenity(index)}
                   disabled={(amenitiesValues ?? []).length === 1}
@@ -287,12 +295,22 @@ export function PoolEditorForm() {
                 </Button>
               </div>
             ))}
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendAmenity("")}
+              >
+                Add Amenity
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="coverUpload" className="text-sm font-medium">
+            <FieldLabel htmlFor="coverUpload" className="text-sm font-medium">
               Cover Photo
-            </label>
+            </FieldLabel>
             <Input
               id="coverUpload"
               type="file"
@@ -301,20 +319,21 @@ export function PoolEditorForm() {
               disabled={isUploadingCover}
             />
             {isUploadingCover && (
-              <p className="text-xs text-blue-600">Uploading cover image...</p>
+              <Skeleton className="h-8 w-full" />
             )}
 
             {coverImageUrl && (
-              <div className="rounded-md border border-slate-200 p-2 space-y-2">
+              <div className="rounded-md border border-slate-200 p-2 space-y-2 w-40">
                 <img
                   src={coverImageUrl}
                   alt="Pool cover"
-                  className="h-36 w-full rounded object-cover"
+                  className="h-36 w-36 rounded object-cover"
                 />
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
+                  className="w-full"
                   onClick={() =>
                     setValue("coverImageUrl", "", {
                       shouldDirty: true,
@@ -329,9 +348,9 @@ export function PoolEditorForm() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="galleryUpload" className="text-sm font-medium">
+            <FieldLabel htmlFor="galleryUpload" className="text-sm font-medium">
               Gallery Photos
-            </label>
+            </FieldLabel>
             <Input
               id="galleryUpload"
               type="file"
@@ -341,12 +360,10 @@ export function PoolEditorForm() {
               disabled={isUploadingGallery}
             />
             {isUploadingGallery && (
-              <p className="text-xs text-blue-600">
-                Uploading gallery images...
-              </p>
+              <Skeleton className="h-8 w-full" />
             )}
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-wrap gap-2 align-items-center">
               {(galleryImages ?? []).map((imageUrl, index) => (
                 <div
                   key={`gallery-${index}`}
@@ -358,13 +375,13 @@ export function PoolEditorForm() {
                   <img
                     src={imageUrl}
                     alt={`Gallery ${index + 1}`}
-                    className="h-24 w-full rounded object-cover"
+                    className="h-32 w-32 rounded"
                   />
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
-                    className="w-full"
+                    className="w-32"
                     onClick={() => removeGallery(index)}
                   >
                     Remove
