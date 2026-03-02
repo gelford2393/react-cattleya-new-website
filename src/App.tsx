@@ -3,6 +3,8 @@ import { Dashboard } from "./components/admin/Dashboard";
 import { AdminLayout } from "./layouts/Admin";
 import { PoolsLayout, PoolsPage } from "./pages/admin/Pools";
 import { PoolsEditLayout, PoolsEditPage } from "./pages/admin/Pools/edit";
+import ReservationEditorPage from "./pages/admin/Reservation/page";
+import ReservationLayout from "./pages/admin/Reservation/layout";
 
 function App() {
   return (
@@ -14,6 +16,9 @@ function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="pools-rates" element={<PoolsLayout />}>
           <Route index element={<PoolsPage />} />
+        </Route>
+        <Route path="reservation-editor" element={<ReservationLayout />}>
+          <Route index element={<ReservationEditorPage />} />
         </Route>
         <Route path="pools/:poolId/edit" element={<PoolsEditLayout />}>
           <Route index element={<PoolsEditPage />} />

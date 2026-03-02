@@ -48,6 +48,14 @@ export function AdminSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Reservation Page Editor">
+                  <NavLink to="/admin/reservation-editor">
+                    <LayoutDashboard />
+                    Reservation Editor
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

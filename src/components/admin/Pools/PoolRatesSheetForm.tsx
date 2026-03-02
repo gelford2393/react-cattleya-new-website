@@ -16,7 +16,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { type FC, useEffect } from "react";
+import { type FC, useEffect, useMemo } from "react";
 import { useGetPools } from "@/hooks/useGetPools";
 import { useCMSStore } from "@/store/useCMSStore";
 import { useForm } from "react-hook-form";
@@ -52,9 +52,15 @@ export const PoolRatesSheetForm: FC = () => {
     defaultValues,
   });
 
-  const selectedPool = (pools as PoolRecord[] | undefined)?.find(
-    (pool) => pool.id === editingPoolId,
-  );
+  const selectedPool = useMemo(() => {
+    if (!pools || !editingPoolId) {
+      return null;
+    }
+
+    return (
+      (pools as PoolRecord[]).find((pool) => pool.id === editingPoolId) ?? null
+    );
+  }, [pools, editingPoolId]);
 
   useEffect(() => {
     if (!selectedPool) {
