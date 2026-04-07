@@ -1,6 +1,6 @@
 import { poolService } from "@/services/PoolServices/poolServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PoolFormValues } from "@/components/admin/Pools/_config";
+import type { PoolFormValues } from "@/components/admin/Pools";
 import { toast } from "sonner";
 
 type UpdatePoolPayload = {
@@ -28,6 +28,7 @@ export function useUpdatePool() {
           day: values.dayRate,
           night: values.nightRate,
         },
+        notes: values.notes?.trim() || null,
         amenities,
         cover_image_url: values.coverImageUrl.trim() || null,
         gallery,

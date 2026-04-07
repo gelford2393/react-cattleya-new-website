@@ -5,6 +5,7 @@ export type PoolRecord = {
   pool_number: number;
   name: string;
   capacity: number | null;
+  notes?: string | null;
   amenities?: string[] | null;
   cover_image_url?: string | null;
   gallery?: string[] | null;
@@ -37,6 +38,7 @@ export const poolFormSchema = yup
       .array()
       .of(yup.string().trim().required("Amenity cannot be empty"))
       .default([]),
+    notes: yup.string().default(""),
     coverImageUrl: yup
       .string()
       .trim()

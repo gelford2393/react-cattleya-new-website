@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { type ReservationFormValues } from "@/components/admin/Reservation/_config";
+import { type ReservationFormValues } from "@/components/admin/Reservation";
 import { cmsServices } from "@/services/CMSServices/cmsServices";
 
 const RESERVATION_PAGE_META = {

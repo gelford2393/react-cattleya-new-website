@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 type PoolRecord = {
   id: string;
@@ -31,8 +33,10 @@ export function PoolRatesTable() {
 
   if (isLoading)
     return (
-      <div className="p-8 text-center text-blue-600 animate-pulse">
-        Fetching Cattleya Pools...
+      <div className="space-y-3 p-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
       </div>
     );
 
@@ -72,13 +76,14 @@ export function PoolRatesTable() {
                 ₱{pool.rates?.night?.toLocaleString() || "0"}
               </TableCell>
               <TableCell className="text-right">
-                <button
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-4"
+                <Button
+                  variant="link"
+                  className="h-auto p-0"
                   onClick={() => handleConfigureClick(pool.id)}
                   type="button"
                 >
                   Configure
-                </button>
+                </Button>
               </TableCell>
             </TableRow>
           ))}

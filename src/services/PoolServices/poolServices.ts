@@ -16,7 +16,7 @@ export const poolService = {
   getPoolsSummary: async () => {
     const { data, error } = await supabase
       .from("pools")
-      .select("id,pool_number,name,capacity,rates")
+      .select("id,pool_number,name,capacity,rates,cover_image_url")
       .order("pool_number");
     if (error) throw error;
     return data;

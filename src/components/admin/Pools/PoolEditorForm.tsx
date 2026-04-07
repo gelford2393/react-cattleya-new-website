@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Editor, type EditorHandle } from "@/components/ui/Editor";
 import {
   normalizeStringArray,
   poolFormSchema,
@@ -12,8 +13,8 @@ import { useGetPoolById } from "@/hooks/useGetPoolById";
 import { useUpdatePool } from "@/hooks/useUpdatePool";
 import { poolService } from "@/services/PoolServices/poolServices";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ const defaultValues: PoolFormValues = {
   dayRate: 0,
   nightRate: 0,
   amenities: [""],
+  notes: "",
   coverImageUrl: "",
   gallery: [],
 };
@@ -31,6 +33,7 @@ export function PoolEditorForm() {
   const { poolId } = useParams();
   const { data: pool, isLoading, error } = useGetPoolById(poolId);
   const updatePoolMutation = useUpdatePool();
+  const notesEditorRef = useRef<EditorHandle>(null);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
@@ -39,6 +42,7 @@ export function PoolEditorForm() {
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
     reset,
   } = useForm<PoolFormValues>({
@@ -92,6 +96,7 @@ export function PoolEditorForm() {
       amenities: normalizeStringArray(selectedPool.amenities).length
         ? normalizeStringArray(selectedPool.amenities)
         : [""],
+      notes: selectedPool.notes ?? "",
       coverImageUrl: selectedPool.cover_image_url ?? "",
       gallery: normalizeStringArray(selectedPool.gallery),
     });
@@ -157,12 +162,21 @@ export function PoolEditorForm() {
     }
   };
 
-  const onSubmit = (values: PoolFormValues) => {
+  const onSubmit = async (values: PoolFormValues) => {
     if (!poolId) {
       return;
     }
 
-    updatePoolMutation.mutate({ id: poolId, values });
+    await notesEditorRef.current?.uploadImages();
+    const latestNotes = notesEditorRef.current?.getContent() ?? values.notes;
+
+    updatePoolMutation.mutate({
+      id: poolId,
+      values: {
+        ...values,
+        notes: latestNotes,
+      },
+    });
   };
 
   if (isLoading) {
@@ -305,6 +319,28 @@ export function PoolEditorForm() {
                 Add Amenity
               </Button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <FieldLabel htmlFor="notes" className="text-sm font-medium">
+              Pool Notes
+            </FieldLabel>
+            <Controller
+              name="notes"
+              control={control}
+              render={({ field }) => (
+                <Editor
+                  ref={notesEditorRef}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  height={320}
+                  mode="text"
+                />
+              )}
+            />
+            {errors.notes && (
+              <p className="text-xs text-red-500">{errors.notes.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">

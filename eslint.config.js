@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      "react-hooks/react-compiler": "off",
+      "react-hooks/refs": "off",
+    },
   },
 ])

@@ -124,3 +124,52 @@
     min-height: 100vh;
   }
 }
+
+@layer base {
+  .admin-dark {
+    color-scheme: dark;
+  }
+
+  .admin-dark .bg-white {
+    background-color: #0f172a !important;
+    color: #e5e7eb;
+  }
+
+  .admin-dark .bg-slate-50\/50 {
+    background-color: rgb(15 23 42 / 50%) !important;
+  }
+
+  .admin-dark .bg-slate-50 {
+    background-color: #111827 !important;
+  }
+
+  .admin-dark .border-slate-200 {
+    border-color: #334155 !important;
+  }
+
+  .admin-dark .text-slate-700 {
+    color: #e5e7eb !important;
+  }
+
+  .admin-dark .text-slate-800,
+  .admin-dark .text-slate-900 {
+    color: #f8fafc !important;
+  }
+
+  .admin-dark .text-slate-600,
+  .admin-dark .text-slate-500 {
+    color: #cbd5e1 !important;
+  }
+
+  .admin-dark .text-slate-400 {
+    color: #94a3b8 !important;
+  }
+
+  .admin-dark .hover\:bg-slate-50:hover {
+    background-color: #1e293b !important;
+  }
+
+  .admin-dark .hover\:bg-slate-50\/50:hover {
+    background-color: rgb(30 41 59 / 50%) !important;
+  }
+}
