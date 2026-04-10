@@ -46,3 +46,6 @@ firebase-adminsdk*.json
 
 # Agent tooling artifacts
 .agents/
+
+# Local interview notes
+INTERVIEW_PRESENTATION.md
