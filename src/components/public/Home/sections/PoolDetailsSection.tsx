@@ -16,15 +16,14 @@ type PoolDetailsSectionProps = {
 type PoolDetailsCarouselProps = {
   poolId: string;
   poolLabel: string;
-  fallbackImage: string;
   slides: Array<{ id: string; image: string }>;
 };
 
-function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolDetailsCarouselProps) {
+function PoolDetailsCarousel({ poolId, poolLabel, slides }: PoolDetailsCarouselProps) {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [loadedImageUrls, setLoadedImageUrls] = useState<Record<string, boolean>>({});
   const activeSlide = slides[activeSlideIndex] ?? null;
-  const activeImageUrl = activeSlide?.image ?? fallbackImage;
+  const activeImageUrl = activeSlide?.image ?? null;
   const isActiveImageLoaded = Boolean(loadedImageUrls[activeImageUrl]);
 
   const handleImageLoaded = useCallback((imageUrl: string) => {
@@ -104,20 +103,8 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
           ) : null}
         </div>
       ) : (
-        <div className="relative">
-          {!isActiveImageLoaded ? (
-            <Skeleton className="absolute inset-0 h-[220px] w-full md:h-[360px]" />
-          ) : null}
-          <img
-            src={fallbackImage}
-            alt={poolLabel}
-            onLoad={() => handleImageLoaded(fallbackImage)}
-            onError={() => handleImageLoaded(fallbackImage)}
-            className={cn(
-              "h-[220px] w-full object-cover transition-opacity duration-200 md:h-[360px]",
-              isActiveImageLoaded ? "opacity-100" : "opacity-0",
-            )}
-          />
+        <div className="flex h-[220px] w-full items-center justify-center bg-black/30 md:h-[360px]">
+          <p className="text-center text-sm text-white/60">No image added</p>
         </div>
       )}
 
@@ -164,13 +151,6 @@ export function PoolDetailsSection({ selectedPool, poolRows }: PoolDetailsSectio
         : [],
     [selectedPool.gallery],
   );
-  const selectedPoolImage = useMemo(
-    () =>
-      selectedPool.cover_image_url?.trim() ||
-      selectedPoolGallery[0] ||
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80",
-    [selectedPool.cover_image_url, selectedPoolGallery],
-  );
   const selectedPoolNotesHtml = selectedPool.notes ?? "";
   const hasSelectedPoolNotes = Boolean(selectedPoolNotesHtml.trim());
 
@@ -199,7 +179,6 @@ export function PoolDetailsSection({ selectedPool, poolRows }: PoolDetailsSectio
         key={selectedPool.id}
         poolId={selectedPool.id}
         poolLabel={`Pool ${selectedPool.pool_number} - ${selectedPool.name}`}
-        fallbackImage={selectedPoolImage}
         slides={selectedPoolSlides}
       />
 

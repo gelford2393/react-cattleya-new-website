@@ -19,7 +19,6 @@ import {
   useWebsiteSettingsPageQuery,
 } from "@/hooks/useWebsiteSettings";
 import { Link, matchPath, Outlet, useLocation } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 type Crumb = {
@@ -128,7 +127,6 @@ export function AdminLayout() {
               <Outlet />
             </div>
           </div>
-          <Toaster />
         </SidebarInset>
       </SidebarProvider>
     </div>

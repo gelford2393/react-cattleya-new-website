@@ -26,15 +26,31 @@ import {
   Settings,
 } from "lucide-react";
 import { DESIGN_TOKENS } from "@/lib/designTokens";
-import { NavLink } from "react-router-dom";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { NavLink, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export function AdminSidebar() {
+  const navigate = useNavigate();
+  const { signOut } = useAdminAuth();
   const { data: pools } = useGetPools();
   const { data: settingsPage } = useWebsiteSettingsPageQuery();
   const websiteSettings = parseWebsiteSettingsContent(settingsPage?.content);
   const sidebarBrandIcon = websiteSettings.siteIconUrl?.trim() || "";
   const collapsedButtonClass =
     "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0";
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+
+    if (error) {
+      toast.error("Logout failed", { description: error });
+      return;
+    }
+
+    toast.success("Logged out", { description: "You have been signed out." });
+    navigate("/admin/login", { replace: true });
+  };
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -169,6 +185,7 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              onClick={handleLogout}
               className={`${DESIGN_TOKENS.classes.adminDangerText} ${collapsedButtonClass}`}
             >
               <LogOut />
