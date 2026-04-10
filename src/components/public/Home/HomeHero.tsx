@@ -63,11 +63,11 @@ export function HomeHero({
   return (
     <section
       id="home"
-      className="relative min-h-[68vh] overflow-hidden border-b border-white/10 md:min-h-[74vh]"
+      className="relative min-h-[52vh] overflow-hidden border-b border-white/10 md:min-h-[60vh]"
     >
       <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBackground})` }}
+        className="absolute inset-0 bg-[var(--app-public-surface)] bg-cover bg-center"
+        style={heroBackground ? { backgroundImage: `url(${heroBackground})` } : undefined}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-[var(--app-public-surface)]" />
 
@@ -273,18 +273,18 @@ export function HomeHero({
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-700 flex-col items-center px-4 pt-12 text-center sm:pt-14 md:px-8 md:pt-18">
-        <h1 className="text-3xl font-extrabold leading-tight drop-shadow-md sm:text-4xl md:text-6xl">
+      <div className="relative z-10 mx-auto flex min-h-[52vh] w-full max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-700 flex-col items-center justify-center px-4 pb-6 pt-20 text-center md:min-h-[60vh] md:px-8 md:pt-24">
+        <h1 className="w-full text-center text-3xl font-extrabold leading-tight drop-shadow-md sm:text-3xl md:text-5xl">
           {resortName}
         </h1>
-        <p className="mt-4 max-w-2xl text-sm font-medium text-white/90 md:text-lg">
+        <p className="mt-3 w-full max-w-2xl text-center text-sm font-medium text-white/90 md:text-base">
           {websiteSubtitle || "Clean, Exclusive, Private and Affordable Pools and Villas for Rent"}
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           <Button
             asChild
             variant="outline"
-            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
+            className="h-10 border-white/70 bg-transparent px-5 text-sm font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
           >
             <a
               href="https://exsight360.com/virtual-tours/cattleya-resort/v4/tour-start-aerial.html"
@@ -297,7 +297,7 @@ export function HomeHero({
           <Button
             asChild
             variant="outline"
-            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
+            className="h-10 border-white/70 bg-transparent px-5 text-sm font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
           >
             <a
               href="https://cattleyaresort.com/tour2017/tour-night.html"

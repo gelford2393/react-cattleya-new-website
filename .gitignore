@@ -43,3 +43,6 @@ firebase-adminsdk*.json
 *.njsproj
 *.sln
 *.sw?
+
+# Agent tooling artifacts
+.agents/

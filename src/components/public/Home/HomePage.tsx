@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { PublicContactUsPanel } from "@/components/public/shared";
 import { Text } from "@/components/ui/text";
+import { Spinner } from "@/components/ui/spinner";
 import { HomeContentPanel } from "./HomeContentPanel";
 import { HomeHero } from "./HomeHero";
+import { HomeLoadingProvider, useHomeLoadingContext } from "./HomeLoadingContext";
 import type { HomeMenu } from "./home.types";
 import { getMenuFromHash } from "./home.utils";
 import { useHomePageData } from "./useHomePageData";
@@ -14,8 +16,17 @@ type HomePageProps = {
 };
 
 export function HomePage({ selectedPoolId }: HomePageProps) {
+  return (
+    <HomeLoadingProvider>
+      <HomePageContent selectedPoolId={selectedPoolId} />
+    </HomeLoadingProvider>
+  );
+}
+
+function HomePageContent({ selectedPoolId }: HomePageProps) {
   const contactPanelRef = useRef<HTMLDivElement | null>(null);
   const { data: selectedPoolData, isLoading: isSelectedPoolLoading } = useGetPoolById(selectedPoolId);
+  const { loadedHeroSrc, setLoadedHeroSrc } = useHomeLoadingContext();
   const [activeMenu, setActiveMenu] = useState<HomeMenu>(() =>
     getMenuFromHash(typeof window !== "undefined" ? window.location.hash : ""),
   );
@@ -49,6 +60,30 @@ export function HomePage({ selectedPoolId }: HomePageProps) {
     window.addEventListener("hashchange", syncFromHash);
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, [selectedPoolId]);
+
+  useEffect(() => {
+    if (!heroBackground) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const image = new Image();
+    image.src = heroBackground;
+
+    const markReady = () => {
+      if (!cancelled) {
+        setLoadedHeroSrc(heroBackground);
+      }
+    };
+
+    image.onload = markReady;
+    image.onerror = markReady;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [heroBackground, setLoadedHeroSrc]);
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isActiveCarouselImageLoaded, setIsActiveCarouselImageLoaded] = useState(false);
@@ -131,6 +166,21 @@ export function HomePage({ selectedPoolId }: HomePageProps) {
 
   if (selectedPoolId && !isSelectedPoolLoading && !selectedPool) {
     return <Navigate to="/" replace />;
+  }
+
+  const isHeroReady = !heroBackground || loadedHeroSrc === heroBackground;
+
+  if (!isHeroReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#383838] text-white">
+        <div className="flex flex-col items-center gap-2">
+          <Spinner className="h-8 w-8" />
+          <Text as="p" className="text-sm text-white/80">
+            Loading page...
+          </Text>
+        </div>
+      </div>
+    );
   }
 
   return (

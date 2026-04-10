@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { MapPin, Phone } from "lucide-react";
 import { FaFacebookF, FaFacebookMessenger, FaXTwitter } from "react-icons/fa6";
 import type { IconType } from "react-icons";
@@ -39,13 +38,6 @@ export function PublicContactUsPanel({
 }: PublicContactUsPanelProps) {
   const hasCmsContent = Boolean(contentHtml?.trim());
   const facebookPageUrl = "https://www.facebook.com/cattleyaresort";
-  const facebookWidgetSrc = useMemo(
-    () =>
-      "https://www.facebook.com/plugins/page.php?href=" +
-      encodeURIComponent(facebookPageUrl) +
-      "&tabs=timeline&width=280&height=130&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false",
-    [facebookPageUrl],
-  );
 
   return (
     <aside
@@ -108,15 +100,21 @@ export function PublicContactUsPanel({
       </div>
 
       <div className="mt-4 overflow-hidden rounded-md border border-white/30 bg-white/95 p-1">
-        <iframe
-          title="Cattleya Resort Facebook"
-          src={facebookWidgetSrc}
-          width="100%"
-          height="130"
-          style={{ border: "none", overflow: "hidden" }}
-          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-          loading="lazy"
-        />
+        <a
+          href={facebookPageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 rounded-md bg-white p-3 text-[#383838] transition hover:bg-[#f8efe8]"
+          aria-label="Open Cattleya Resort Facebook page"
+        >
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#509b48]">
+              Facebook
+            </span>
+            <span className="text-sm font-medium">Open Cattleya Resort Page</span>
+          </div>
+          <FaFacebookF className="size-4 text-[#509b48]" />
+        </a>
       </div>
     </aside>
   );

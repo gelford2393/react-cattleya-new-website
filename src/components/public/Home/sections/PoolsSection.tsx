@@ -27,7 +27,38 @@ export function PoolsSection({ poolRows, noteHtml, hasNoteContent }: PoolsSectio
         </span>
       </div>
 
-      <Table className="min-w-[700px] text-xs sm:text-sm">
+      <div className="flex flex-col gap-3 md:hidden">
+        {poolRows.map((pool) => {
+          const rates = pool.rates ?? {};
+
+          return (
+            <div key={pool.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <Link
+                to={`/pools/${pool.id}`}
+                className="text-sm font-semibold text-white underline-offset-4 hover:text-[#a4d473] hover:underline"
+              >
+                Pool {pool.pool_number}
+              </Link>
+
+              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                <span className="text-white/65">Name</span>
+                <span className="text-right text-white/90">{pool.name}</span>
+
+                <span className="text-white/65">Capacity</span>
+                <span className="text-right text-white/85">{pool.capacity ?? "N/A"}</span>
+
+                <span className="text-white/65">Day Rate</span>
+                <span className="text-right text-white/85">{formatCurrency(rates.day)}</span>
+
+                <span className="text-white/65">Night Rate</span>
+                <span className="text-right text-white/85">{formatCurrency(rates.night)}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <Table className="hidden text-sm md:table">
         <TableHeader>
           <TableRow className="border-white/15 hover:bg-transparent">
             <TableHead className="text-white/80">Pool</TableHead>
@@ -35,7 +66,6 @@ export function PoolsSection({ poolRows, noteHtml, hasNoteContent }: PoolsSectio
             <TableHead className="text-white/80">Capacity</TableHead>
             <TableHead className="text-white/80">Day Rate</TableHead>
             <TableHead className="text-white/80">Night Rate</TableHead>
-            <TableHead className="text-right text-white/80">View</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -44,16 +74,15 @@ export function PoolsSection({ poolRows, noteHtml, hasNoteContent }: PoolsSectio
 
             return (
               <TableRow key={pool.id} className="border-white/10 hover:bg-white/5">
-                <TableCell className="font-semibold text-white">Pool {pool.pool_number}</TableCell>
+                <TableCell className="font-semibold">
+                  <Link to={`/pools/${pool.id}`} className="text-white hover:text-[#a4d473]">
+                    Pool {pool.pool_number}
+                  </Link>
+                </TableCell>
                 <TableCell className="text-white/90">{pool.name}</TableCell>
                 <TableCell className="text-white/85">{pool.capacity ?? "N/A"}</TableCell>
                 <TableCell className="text-white/85">{formatCurrency(rates.day)}</TableCell>
                 <TableCell className="text-white/85">{formatCurrency(rates.night)}</TableCell>
-                <TableCell className="text-right">
-                  <Link to={`/pools/${pool.id}`} className="text-[#a4d473] hover:text-[#feb234]">
-                    Details
-                  </Link>
-                </TableCell>
               </TableRow>
             );
           })}

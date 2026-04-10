@@ -121,13 +121,13 @@ export function PoolEditorForm() {
         shouldDirty: true,
         shouldValidate: true,
       });
+      toast.success("Cover image uploaded successfully!");
     } catch (uploadError) {
       console.error(uploadError);
       toast.error("Failed to upload cover image. Please try again.");
     } finally {
       setIsUploadingCover(false);
       event.target.value = "";
-      toast.success("Cover image uploaded successfully!");
     }
   };
 
@@ -152,13 +152,13 @@ export function PoolEditorForm() {
         shouldDirty: true,
         shouldValidate: true,
       });
+      toast.success("Gallery images uploaded successfully!");
     } catch (uploadError) {
       console.error(uploadError);
       toast.error("Failed to upload gallery images. Please try again.");
     } finally {
       setIsUploadingGallery(false);
       event.target.value = "";
-      toast.success("Gallery images uploaded successfully!");
     }
   };
 

@@ -10,9 +10,6 @@ import {
 } from "@/hooks/useWebsiteSettings";
 import type { CarouselSlide, PoolSummary } from "./home.types";
 
-const FALLBACK_HERO_BACKGROUND =
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80";
-
 const FALLBACK_WEBSITE_SUBTITLE =
   "Clean, Exclusive, Private and Affordable Pools and Villas for Rent";
 
@@ -26,8 +23,7 @@ export function useHomePageData() {
 
   const websiteSettings = parseWebsiteSettingsContent(settingsPage?.content);
   const resortName = websiteSettings.siteName?.trim() || "Cattleya Resort";
-  const heroBackground =
-    websiteSettings.homeBackgroundUrl?.trim() || FALLBACK_HERO_BACKGROUND;
+  const heroBackground = websiteSettings.homeBackgroundUrl?.trim() || "";
   const websiteSubtitle =
     websiteSettings.websiteSubtitle?.trim() || FALLBACK_WEBSITE_SUBTITLE;
   const homeWelcomeTitle =
