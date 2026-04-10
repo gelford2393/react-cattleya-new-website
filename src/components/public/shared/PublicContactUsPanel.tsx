@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { MapPin, Phone } from "lucide-react";
 import { FaFacebookF, FaFacebookMessenger, FaXTwitter } from "react-icons/fa6";
 import type { IconType } from "react-icons";
@@ -9,6 +10,28 @@ type PublicContactUsPanelProps = {
   compact?: boolean;
 };
 
+const SOCIAL_LINKS = [
+  {
+    href: "https://m.me/cattleyaresort",
+    label: "Messenger",
+    Icon: FaFacebookMessenger,
+  },
+  {
+    href: "https://www.facebook.com/cattleyaresort",
+    label: "Facebook",
+    Icon: FaFacebookF,
+  },
+  {
+    href: "https://x.com/cattleyaresort",
+    label: "Twitter",
+    Icon: FaXTwitter,
+  },
+] as const satisfies ReadonlyArray<{
+  href: string;
+  label: string;
+  Icon: IconType;
+}>;
+
 export function PublicContactUsPanel({
   contentHtml,
   className = "",
@@ -16,31 +39,13 @@ export function PublicContactUsPanel({
 }: PublicContactUsPanelProps) {
   const hasCmsContent = Boolean(contentHtml?.trim());
   const facebookPageUrl = "https://www.facebook.com/cattleyaresort";
-  const facebookWidgetSrc =
-    "https://www.facebook.com/plugins/page.php?href=" +
-    encodeURIComponent(facebookPageUrl) +
-    "&tabs=timeline&width=280&height=130&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false";
-  const socialLinks = [
-    {
-      href: "https://m.me/cattleyaresort",
-      label: "Messenger",
-      Icon: FaFacebookMessenger,
-    },
-    {
-      href: "https://www.facebook.com/cattleyaresort",
-      label: "Facebook",
-      Icon: FaFacebookF,
-    },
-    {
-      href: "https://x.com/cattleyaresort",
-      label: "Twitter",
-      Icon: FaXTwitter,
-    },
-  ] as const satisfies ReadonlyArray<{
-    href: string;
-    label: string;
-    Icon: IconType;
-  }>;
+  const facebookWidgetSrc = useMemo(
+    () =>
+      "https://www.facebook.com/plugins/page.php?href=" +
+      encodeURIComponent(facebookPageUrl) +
+      "&tabs=timeline&width=280&height=130&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false",
+    [facebookPageUrl],
+  );
 
   return (
     <aside
@@ -87,7 +92,7 @@ export function PublicContactUsPanel({
       )}
 
       <div className="mt-5 flex items-center gap-3 pt-4">
-        {socialLinks.map(({ href, label, Icon }) => (
+        {SOCIAL_LINKS.map(({ href, label, Icon }) => (
           <a
             key={label}
             href={href}

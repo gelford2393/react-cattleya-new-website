@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,12 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
   const activeImageUrl = activeSlide?.image ?? fallbackImage;
   const isActiveImageLoaded = Boolean(loadedImageUrls[activeImageUrl]);
 
-  const handleImageLoaded = (imageUrl: string) => {
+  const handleImageLoaded = useCallback((imageUrl: string) => {
     setLoadedImageUrls((current) => ({
       ...current,
       [imageUrl]: true,
     }));
-  };
+  }, []);
 
   useEffect(() => {
     if (slides.length <= 1 || !isActiveImageLoaded) {
@@ -46,15 +46,19 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
     return () => window.clearInterval(intervalId);
   }, [isActiveImageLoaded, slides.length]);
 
-  const goToPrevSlide = () => {
+  const goToPrevSlide = useCallback(() => {
     if (slides.length <= 1) return;
     setActiveSlideIndex((current) => (current === 0 ? slides.length - 1 : current - 1));
-  };
+  }, [slides.length]);
 
-  const goToNextSlide = () => {
+  const goToNextSlide = useCallback(() => {
     if (slides.length <= 1) return;
     setActiveSlideIndex((current) => (current + 1) % slides.length);
-  };
+  }, [slides.length]);
+
+  const handleSelectSlide = useCallback((index: number) => {
+    setActiveSlideIndex(index);
+  }, []);
 
   return (
     <div key={poolId} className="overflow-hidden rounded-lg border border-[#a4d473]/25 bg-black/30">
@@ -76,22 +80,26 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
 
           {slides.length > 1 ? (
             <>
-              <button
+              <Button
                 type="button"
+                size="icon-sm"
+                variant="outline"
                 onClick={goToPrevSlide}
                 aria-label="Previous pool image"
-                className="absolute left-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/45 p-2 text-white/90 transition hover:bg-black/65"
+                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border-white/30 bg-black/45 text-white/90 hover:bg-black/65"
               >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
+                <ChevronLeft />
+              </Button>
+              <Button
                 type="button"
+                size="icon-sm"
+                variant="outline"
                 onClick={goToNextSlide}
                 aria-label="Next pool image"
-                className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/45 p-2 text-white/90 transition hover:bg-black/65"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-white/30 bg-black/45 text-white/90 hover:bg-black/65"
               >
-                <ChevronRight className="size-4" />
-              </button>
+                <ChevronRight />
+              </Button>
             </>
           ) : null}
         </div>
@@ -116,15 +124,17 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
       {slides.length > 1 ? (
         <div className="flex items-center justify-center gap-2 px-4 py-3">
           {slides.map((slide, index) => (
-            <button
+            <Button
               key={slide.id}
               type="button"
-              onClick={() => setActiveSlideIndex(index)}
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => handleSelectSlide(index)}
               aria-label={`Go to pool image ${index + 1}`}
               className={
                 index === activeSlideIndex
-                  ? "h-2 w-8 rounded-full bg-[#a4d473] transition"
-                  : "h-2 w-2 rounded-full bg-white/45 transition hover:bg-white/70"
+                  ? "w-8 rounded-full bg-[#a4d473] transition hover:bg-[#a4d473]"
+                  : "rounded-full bg-white/45 transition hover:bg-white/70"
               }
             />
           ))}
@@ -135,31 +145,46 @@ function PoolDetailsCarousel({ poolId, poolLabel, fallbackImage, slides }: PoolD
 }
 
 export function PoolDetailsSection({ selectedPool, poolRows }: PoolDetailsSectionProps) {
-  const selectedPoolRates = selectedPool.rates ?? {};
-  const selectedPoolAmenities = Array.isArray(selectedPool.amenities)
-    ? selectedPool.amenities.filter(
-        (item: string | null | undefined): item is string => Boolean(item?.trim()),
-      )
-    : [];
-  const selectedPoolGallery = Array.isArray(selectedPool.gallery)
-    ? selectedPool.gallery.filter(
-        (item: string | null | undefined): item is string => Boolean(item?.trim()),
-      )
-    : [];
-  const selectedPoolImage =
-    selectedPool.cover_image_url?.trim() ||
-    selectedPoolGallery[0] ||
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80";
+  const selectedPoolRates = useMemo(() => selectedPool.rates ?? {}, [selectedPool.rates]);
+  const selectedPoolAmenities = useMemo(
+    () =>
+      Array.isArray(selectedPool.amenities)
+        ? selectedPool.amenities.filter(
+            (item: string | null | undefined): item is string => Boolean(item?.trim()),
+          )
+        : [],
+    [selectedPool.amenities],
+  );
+  const selectedPoolGallery = useMemo(
+    () =>
+      Array.isArray(selectedPool.gallery)
+        ? selectedPool.gallery.filter(
+            (item: string | null | undefined): item is string => Boolean(item?.trim()),
+          )
+        : [],
+    [selectedPool.gallery],
+  );
+  const selectedPoolImage = useMemo(
+    () =>
+      selectedPool.cover_image_url?.trim() ||
+      selectedPoolGallery[0] ||
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80",
+    [selectedPool.cover_image_url, selectedPoolGallery],
+  );
   const selectedPoolNotesHtml = selectedPool.notes ?? "";
   const hasSelectedPoolNotes = Boolean(selectedPoolNotesHtml.trim());
 
-  const selectedPoolSlides = Array.from(
-    new Map(
-      [selectedPool.cover_image_url?.trim(), ...selectedPoolGallery]
-        .filter((image): image is string => Boolean(image?.trim()))
-        .map((image, index) => [image, `${selectedPool.id}-${index}`]),
-    ).entries(),
-  ).map(([image, id]) => ({ id, image }));
+  const selectedPoolSlides = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          [selectedPool.cover_image_url?.trim(), ...selectedPoolGallery]
+            .filter((image): image is string => Boolean(image?.trim()))
+            .map((image, index) => [image, `${selectedPool.id}-${index}`]),
+        ).entries(),
+      ).map(([image, id]) => ({ id, image })),
+    [selectedPool.cover_image_url, selectedPool.id, selectedPoolGallery],
+  );
 
   return (
     <>

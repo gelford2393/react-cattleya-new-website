@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
@@ -31,12 +32,12 @@ export function PoolCarousel({
     onActiveImageLoadStateChange?.(isActiveImageLoaded);
   }, [isActiveImageLoaded, onActiveImageLoadStateChange]);
 
-  const handleImageLoaded = (imageUrl: string) => {
+  const handleImageLoaded = useCallback((imageUrl: string) => {
     setLoadedImageUrls((current) => ({
       ...current,
       [imageUrl]: true,
     }));
-  };
+  }, []);
 
   if (!activeSlide) {
     return (
@@ -73,22 +74,26 @@ export function PoolCarousel({
 
         {slides.length > 1 ? (
           <>
-            <button
+            <Button
               type="button"
+              size="icon-sm"
+              variant="outline"
               onClick={onPrev}
               aria-label="Previous pool image"
-              className="absolute left-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/45 p-2 text-white/90 transition hover:bg-black/65"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border-white/30 bg-black/45 text-white/90 hover:bg-black/65"
             >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
+              <ChevronLeft />
+            </Button>
+            <Button
               type="button"
+              size="icon-sm"
+              variant="outline"
               onClick={onNext}
               aria-label="Next pool image"
-              className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/45 p-2 text-white/90 transition hover:bg-black/65"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-white/30 bg-black/45 text-white/90 hover:bg-black/65"
             >
-              <ChevronRight className="size-4" />
-            </button>
+              <ChevronRight />
+            </Button>
           </>
         ) : null}
       </div>
@@ -96,15 +101,17 @@ export function PoolCarousel({
       {slides.length > 1 ? (
         <div className="flex items-center justify-center gap-2 px-4 py-3">
           {slides.map((slide, index) => (
-            <button
+            <Button
               key={slide.id}
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={() => onSelect(index)}
               aria-label={`Go to pool ${slide.poolNumber} cover`}
-              className={`h-2 rounded-full transition ${
+              className={`rounded-full transition ${
                 index === activeSlideIndex
-                  ? "w-8 bg-[#a4d473]"
-                  : "w-2 bg-white/45 hover:bg-white/70"
+                  ? "w-8 bg-[#a4d473] hover:bg-[#a4d473]"
+                  : "bg-white/45 hover:bg-white/70"
               }`}
             />
           ))}

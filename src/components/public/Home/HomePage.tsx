@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { PublicContactUsPanel } from "@/components/public/shared";
 import { Text } from "@/components/ui/text";
@@ -92,32 +92,42 @@ export function HomePage({ selectedPoolId }: HomePageProps) {
     };
   }, [contactHtml]);
 
-  const normalizedSlideIndex =
-    carouselSlides.length > 0 ? activeSlideIndex % carouselSlides.length : 0;
+  const normalizedSlideIndex = useMemo(
+    () => (carouselSlides.length > 0 ? activeSlideIndex % carouselSlides.length : 0),
+    [activeSlideIndex, carouselSlides.length],
+  );
 
-  const goToPrevSlide = () => {
+  const goToPrevSlide = useCallback(() => {
     if (carouselSlides.length <= 1) return;
     setIsActiveCarouselImageLoaded(false);
     setActiveSlideIndex((current) =>
       current === 0 ? carouselSlides.length - 1 : current - 1,
     );
-  };
+  }, [carouselSlides.length]);
 
-  const goToNextSlide = () => {
+  const goToNextSlide = useCallback(() => {
     if (carouselSlides.length <= 1) return;
     setIsActiveCarouselImageLoaded(false);
     setActiveSlideIndex((current) => (current + 1) % carouselSlides.length);
-  };
+  }, [carouselSlides.length]);
 
-  const handleSelectSlide = (index: number) => {
+  const handleSelectSlide = useCallback((index: number) => {
     setIsActiveCarouselImageLoaded(false);
     setActiveSlideIndex(index);
-  };
+  }, []);
 
-  const selectedPool = selectedPoolId
-    ? selectedPoolData ?? poolRows.find((pool) => pool.id === selectedPoolId) ?? null
-    : null;
-  const resolvedActiveMenu: HomeMenu = selectedPoolId ? "pool-details" : activeMenu;
+  const selectedPool = useMemo(
+    () =>
+      selectedPoolId
+        ? selectedPoolData ?? poolRows.find((pool) => pool.id === selectedPoolId) ?? null
+        : null,
+    [poolRows, selectedPoolData, selectedPoolId],
+  );
+
+  const resolvedActiveMenu: HomeMenu = useMemo(
+    () => (selectedPoolId ? "pool-details" : activeMenu),
+    [activeMenu, selectedPoolId],
+  );
 
   if (selectedPoolId && !isSelectedPoolLoading && !selectedPool) {
     return <Navigate to="/" replace />;

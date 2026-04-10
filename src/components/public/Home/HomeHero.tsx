@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DESIGN_TOKENS } from "@/lib/designTokens";
 import { cn } from "@/lib/utils";
 import { HOME_NAV_ITEMS } from "./home.utils";
 import { useGetPools } from "@/hooks/useGetPools";
@@ -47,8 +48,17 @@ export function HomeHero({
 
   const resolvedLogoUrl = siteIconUrl?.trim() || "";
   const hasLogoImage = Boolean(resolvedLogoUrl) && failedLogoUrl !== resolvedLogoUrl;
-  const sortedPools = [...(pools ?? [])].sort((a, b) => Number(a.pool_number) - Number(b.pool_number));
+  const sortedPools = useMemo(
+    () => [...(pools ?? [])].sort((a, b) => Number(a.pool_number) - Number(b.pool_number)),
+    [pools],
+  );
   const homeHref = `${navHrefPrefix}#home`;
+  const handleMobilePoolsToggle = useCallback(() => {
+    setIsMobilePoolsExpanded((current) => !current);
+  }, []);
+  const handleLogoError = useCallback(() => {
+    setFailedLogoUrl(resolvedLogoUrl);
+  }, [resolvedLogoUrl]);
 
   return (
     <section
@@ -59,7 +69,7 @@ export function HomeHero({
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroBackground})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-[#383838]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-[var(--app-public-surface)]" />
 
       <header
         className={cn(
@@ -83,7 +93,7 @@ export function HomeHero({
                 src={resolvedLogoUrl}
                 alt={`${resortName} logo`}
                 className="h-9 w-auto max-w-[7rem] object-contain sm:h-11 sm:max-w-[9rem]"
-                onError={() => setFailedLogoUrl(resolvedLogoUrl)}
+                onError={handleLogoError}
               />
             ) : (
               <Sparkles className="size-5" />
@@ -96,7 +106,7 @@ export function HomeHero({
               <a
                 key={item.href}
                 href={`${navHrefPrefix}${item.href}`}
-                className="transition-colors hover:text-[#a4d473]"
+                className={DESIGN_TOKENS.classes.publicAccentLink}
               >
                 {item.label}
               </a>
@@ -111,7 +121,7 @@ export function HomeHero({
               <Button
                 variant="outline"
                 size="sm"
-                className="shrink-0 border-white/60 bg-transparent text-white hover:bg-[#f8efe8] hover:text-[#383838] md:hidden"
+                className="shrink-0 border-white/60 bg-transparent text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)] md:hidden"
               >
                 <Menu />
                 <span className="sr-only">Open menu</span>
@@ -120,7 +130,7 @@ export function HomeHero({
 
             <SheetContent
               side="right"
-              className="w-[90vw] border-l border-[#a4d473]/40 bg-[#383838] p-0 text-[#a4d473] sm:max-w-sm"
+              className="w-[90vw] border-l border-[var(--app-public-accent)]/40 bg-[var(--app-public-surface)] p-0 text-[var(--app-public-accent)] sm:max-w-sm"
             >
               <SheetHeader>
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
@@ -134,7 +144,7 @@ export function HomeHero({
                         src={resolvedLogoUrl}
                         alt={`${resortName} logo`}
                         className="h-8 w-auto max-w-[6rem] object-contain"
-                        onError={() => setFailedLogoUrl(resolvedLogoUrl)}
+                        onError={handleLogoError}
                       />
                     ) : (
                       <Sparkles className="size-4" />
@@ -162,15 +172,17 @@ export function HomeHero({
                               </a>
                             </SheetClose>
 
-                            <button
+                            <Button
                               type="button"
-                              onClick={() => setIsMobilePoolsExpanded((current) => !current)}
-                              className="text-[0.72rem] font-semibold uppercase tracking-wide text-[#a4d473]"
+                              variant="ghost"
+                              size="xs"
+                              onClick={handleMobilePoolsToggle}
+                              className="h-6 px-2 text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--app-public-accent)] hover:bg-[var(--app-public-accent)]/15 hover:text-[var(--app-public-highlight)]"
                               aria-expanded={isMobilePoolsExpanded}
                               aria-label={isMobilePoolsExpanded ? "Hide pools" : "Show pools"}
                             >
                               {isMobilePoolsExpanded ? "Hide" : "Show"}
-                            </button>
+                            </Button>
                           </div>
                         ) : (
                           <SheetClose asChild>
@@ -272,7 +284,7 @@ export function HomeHero({
           <Button
             asChild
             variant="outline"
-            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[#f8efe8] hover:text-[#383838]"
+            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
           >
             <a
               href="https://exsight360.com/virtual-tours/cattleya-resort/v4/tour-start-aerial.html"
@@ -285,7 +297,7 @@ export function HomeHero({
           <Button
             asChild
             variant="outline"
-            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[#f8efe8] hover:text-[#383838]"
+            className="h-11 border-white/70 bg-transparent px-6 text-base font-semibold text-white hover:bg-[var(--app-public-paper)] hover:text-[var(--app-public-surface)]"
           >
             <a
               href="https://cattleyaresort.com/tour2017/tour-night.html"

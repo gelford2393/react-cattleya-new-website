@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import type { HomeMenu, PoolSummary } from "./home.types";
 import type { CarouselSlide } from "./home.types";
@@ -48,12 +49,15 @@ export function HomeContentPanel({
   onSelectSlide,
   onActiveImageLoadStateChange,
 }: HomeContentPanelProps) {
-  const panelStyle =
-    contentHeight && Number.isFinite(contentHeight)
-      ? ({
-          "--content-panel-height": `${contentHeight}px`,
-        } as CSSProperties)
-      : undefined;
+  const panelStyle = useMemo(
+    () =>
+      contentHeight && Number.isFinite(contentHeight)
+        ? ({
+            "--content-panel-height": `${contentHeight}px`,
+          } as CSSProperties)
+        : undefined,
+    [contentHeight],
+  );
 
   return (
     <div

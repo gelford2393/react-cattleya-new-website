@@ -25,6 +25,7 @@ import {
   CalendarDays,
   Settings,
 } from "lucide-react";
+import { DESIGN_TOKENS } from "@/lib/designTokens";
 import { NavLink } from "react-router-dom";
 
 export function AdminSidebar() {
@@ -167,7 +168,9 @@ export function AdminSidebar() {
       <SidebarFooter className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className={`text-red-500 ${collapsedButtonClass}`}>
+            <SidebarMenuButton
+              className={`${DESIGN_TOKENS.classes.adminDangerText} ${collapsedButtonClass}`}
+            >
               <LogOut />
               <span className="group-data-[collapsible=icon]:hidden">Logout</span>
             </SidebarMenuButton>

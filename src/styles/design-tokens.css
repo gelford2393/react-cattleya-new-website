@@ -1,0 +1,11 @@
+:root {
+  --app-public-surface: #383838;
+  --app-public-paper: #f8efe8;
+  --app-public-primary: #509b48;
+  --app-public-accent: #a4d473;
+  --app-public-highlight: #feb234;
+  --app-admin-danger: #ef4444;
+
+  --app-radius-panel: 0.75rem;
+  --app-shadow-elevated: 0 8px 30px rgba(26, 26, 26, 0.25);
+}
