@@ -49,3 +49,6 @@ firebase-adminsdk*.json
 
 # Local interview notes
 INTERVIEW_PRESENTATION.md
+
+.vercel
+.env*.local
