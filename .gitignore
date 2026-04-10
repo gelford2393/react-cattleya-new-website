@@ -13,6 +13,26 @@ dist-ssr
 *.local
 .env
 
+# Sensitive files
+.env.*
+!.env.example
+!.env.*.example
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*.asc
+*.gpg
+secrets.*
+*.secret
+*credentials*.json
+firebase-adminsdk*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
