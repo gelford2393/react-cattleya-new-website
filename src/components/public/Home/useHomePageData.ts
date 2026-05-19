@@ -14,12 +14,12 @@ const FALLBACK_WEBSITE_SUBTITLE =
   "Clean, Exclusive, Private and Affordable Pools and Villas for Rent";
 
 export function useHomePageData() {
-  const { data: pools } = useGetPools();
-  const { data: settingsPage } = useWebsiteSettingsPageQuery();
-  const { data: contactPage } = useContactUsPageQuery();
-  const { data: reservationPage } = useReservationPageQuery();
-  const { data: locationMapPage } = useLocationMapPageQuery();
-  const { data: notePage } = useNotePageQuery();
+  const { data: pools, isLoading: isPoolsLoading, isError: isPoolsError } = useGetPools();
+  const { data: settingsPage, isLoading: isSettingsLoading, isError: isSettingsError } = useWebsiteSettingsPageQuery();
+  const { data: contactPage, isLoading: isContactLoading, isError: isContactError } = useContactUsPageQuery();
+  const { data: reservationPage, isLoading: isReservationLoading, isError: isReservationError } = useReservationPageQuery();
+  const { data: locationMapPage, isLoading: isLocationMapLoading, isError: isLocationMapError } = useLocationMapPageQuery();
+  const { data: notePage, isLoading: isNoteLoading, isError: isNoteError } = useNotePageQuery();
 
   const websiteSettings = parseWebsiteSettingsContent(settingsPage?.content);
   const resortName = websiteSettings.siteName?.trim() || "Cattleya Resort";
@@ -48,6 +48,10 @@ export function useHomePageData() {
     [poolRows],
   );
 
+  // Determine if page is still loading critical data
+  const isCriticalDataLoading = isPoolsLoading || isSettingsLoading;
+  const hasCriticalDataError = isPoolsError || isSettingsError;
+
   return {
     resortName,
     heroBackground,
@@ -64,5 +68,21 @@ export function useHomePageData() {
     hasNoteContent: Boolean(notePage?.content?.trim()),
     poolRows,
     carouselSlides,
+    // Loading states
+    isCriticalDataLoading,
+    isPoolsLoading,
+    isSettingsLoading,
+    isContactLoading,
+    isReservationLoading,
+    isLocationMapLoading,
+    isNoteLoading,
+    // Error states
+    hasCriticalDataError,
+    isPoolsError,
+    isSettingsError,
+    isContactError,
+    isReservationError,
+    isLocationMapError,
+    isNoteError,
   };
 }

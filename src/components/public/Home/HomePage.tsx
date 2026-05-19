@@ -47,6 +47,8 @@ function HomePageContent({ selectedPoolId }: HomePageProps) {
     hasNoteContent,
     poolRows,
     carouselSlides,
+    isCriticalDataLoading,
+    hasCriticalDataError,
   } = useHomePageData();
 
   useEffect(() => {
@@ -166,6 +168,33 @@ function HomePageContent({ selectedPoolId }: HomePageProps) {
 
   if (selectedPoolId && !isSelectedPoolLoading && !selectedPool) {
     return <Navigate to="/" replace />;
+  }
+
+  // Check if critical data is still loading
+  if (isCriticalDataLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#383838] text-white">
+        <div className="flex flex-col items-center gap-2">
+          <Spinner className="h-8 w-8" />
+          <Text as="p" className="text-sm text-white/80">
+            Loading page...
+          </Text>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if critical data failed to load
+  if (hasCriticalDataError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#383838] text-white">
+        <div className="flex flex-col items-center gap-2">
+          <Text as="p" className="text-sm text-red-400">
+            Failed to load page data. Please try refreshing.
+          </Text>
+        </div>
+      </div>
+    );
   }
 
   const isHeroReady = !heroBackground || loadedHeroSrc === heroBackground;
