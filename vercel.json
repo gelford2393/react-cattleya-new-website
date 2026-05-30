@@ -1,17 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [
-    {
-      "source": "/\\.env:env([^/]*)?(/.*)?",
-      "destination": "/",
-      "permanent": false,
-      "statusCode": 404
-    }
-  ],
   "routes": [
     {
       "src": "/\\..*",
-      "dest": "/",
       "status": 404
     },
     {
