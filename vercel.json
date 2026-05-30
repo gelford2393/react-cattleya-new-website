@@ -1,9 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/\\.env:env([^/]*)?(/.*)?",
+      "destination": "/",
+      "permanent": false,
+      "statusCode": 404
+    }
+  ],
+  "routes": [
+    {
+      "src": "/\\..*",
+      "dest": "/",
+      "status": 404
+    },
+    {
+      "src": "^/(?!.*\\.).*$",
+      "dest": "/index.html",
+      "status": 200
     }
   ]
 }
