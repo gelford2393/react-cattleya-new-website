@@ -28,4 +28,3 @@ function Button({
 }
 
 export { Button }
-export { buttonVariants, type VariantProps } from "./button-variants"
