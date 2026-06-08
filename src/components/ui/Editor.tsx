@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Editor as TinyMCEEditor } from "@tinymce/tinymce-react";
 import { toast } from "sonner";
 import { Spinner } from "./spinner";
@@ -35,7 +35,6 @@ export interface RichEditorProps {
   slug?: string;
   mode?: "text" | "upload";
   onImageUpload?: (file: File, slug: string) => Promise<string>;
-  ref?: React.Ref<EditorHandle>;
 }
 
 export interface EditorHandle {
@@ -50,16 +49,18 @@ type TinyImageBlobInfo = {
   name?: string;
 };
 
-export function Editor({
-  value,
-  onChange,
-  height = 775,
-  loading = false,
-  slug = "editor",
-  mode,
-  onImageUpload,
+export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
+  {
+    value,
+    onChange,
+    height = 775,
+    loading = false,
+    slug = "editor",
+    mode,
+    onImageUpload,
+  }: RichEditorProps,
   ref,
-}: RichEditorProps) {
+) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorRef = useRef<any>(null);
 
@@ -258,4 +259,6 @@ export function Editor({
       )}
     </div>
   );
-}
+});
+
+Editor.displayName = "Editor";
