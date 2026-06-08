@@ -186,7 +186,7 @@ export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
         </div>
       ) : (
         <TinyMCEEditor
-          apiKey={import.meta.env.VITE_TINYMCE_API_KEY || "no-api-key"}
+          tinymceScriptSrc="/tinymce/tinymce.min.js"
           value={value}
           onInit={(_evt, editor) => {
             editorRef.current = editor;

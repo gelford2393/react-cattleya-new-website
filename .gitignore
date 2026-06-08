@@ -52,3 +52,5 @@ INTERVIEW_PRESENTATION.md
 
 .vercel
 .env*.local
+
+public/tinymce
