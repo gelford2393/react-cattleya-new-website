@@ -46,7 +46,7 @@ export interface EditorHandle {
 type TinyImageBlobInfo = {
   blob: () => Blob;
   filename?: () => string;
-  name?: string;
+  name?: () => string;
 };
 
 export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
@@ -100,7 +100,7 @@ export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
 
       const blob = blobInfo.blob();
       const fallbackName =
-        blobInfo.filename?.() ?? blobInfo.name ?? `editor-image-${Date.now()}.png`;
+        blobInfo.filename?.() ?? blobInfo.name?.() ?? `editor-image-${Date.now()}.png`;
       const file =
         blob instanceof File
           ? blob
