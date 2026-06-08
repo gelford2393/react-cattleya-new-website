@@ -192,6 +192,7 @@ export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
             editorRef.current = editor;
           }}
           init={{
+            license_key: 'gpl',
             height,
             menubar: false,
             plugins: uploadsEnabled ? DEFAULT_PLUGINS : TEXT_ONLY_PLUGINS,
