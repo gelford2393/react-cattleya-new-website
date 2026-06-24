@@ -17,7 +17,7 @@
       "continue": true
     },
     {
-      "src": "^/(?!.*\\.).*$",
+      "src": "^/(?!api/)(?!.*\\.).*$",
       "dest": "/index.html",
       "status": 200
     }
