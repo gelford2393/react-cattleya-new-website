@@ -20,6 +20,16 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Fetches all pools for grounding the system prompt.
+ *
+ * On a Supabase error we deliberately degrade gracefully (return `[]`) instead
+ * of throwing, so a transient DB problem doesn't take down the whole chat
+ * endpoint — the prompt simply falls back to "No pool data is currently
+ * available." We log at `error` level with a `[chat:critical]` tag (not a quiet
+ * `warn`) because a silent, prolonged "no data" state should be alertable in
+ * the serverless logs.
+ */
 async function fetchPools(): Promise<PoolRow[]> {
   const { data, error } = await supabaseServer
     .from("pools")
@@ -27,12 +37,21 @@ async function fetchPools(): Promise<PoolRow[]> {
     .order("pool_number");
 
   if (error) {
-    console.warn("[chat] Failed to fetch pools for system prompt:", error.message);
+    console.error("[chat:critical] Failed to fetch pools for system prompt:", error.message);
     return [];
   }
   return data ?? [];
 }
 
+/**
+ * Fetches a single CMS page by slug for the policies/info section of the prompt.
+ *
+ * Returns `null` both when the page genuinely doesn't exist and when the fetch
+ * fails — callers treat a missing page as "just omit that section." The error
+ * case is logged at `error` level with the `[chat:critical]` tag so an
+ * infrastructure failure (vs. an intentionally unpublished page) is visible in
+ * the logs.
+ */
 async function fetchCmsPage(slug: string): Promise<CmsPageRow | null> {
   const { data, error } = await supabaseServer
     .from("cms_pages")
@@ -41,12 +60,18 @@ async function fetchCmsPage(slug: string): Promise<CmsPageRow | null> {
     .maybeSingle();
 
   if (error) {
-    console.warn(`[chat] Failed to fetch CMS page "${slug}":`, error.message);
+    console.error(`[chat:critical] Failed to fetch CMS page "${slug}":`, error.message);
     return null;
   }
   return data;
 }
 
+/**
+ * Formats one pool row into a single human-readable bullet for the prompt,
+ * e.g. `- Pool 1 "Lagoon": capacity 20, day rate ₱1500, night rate ₱2000. ...`.
+ * Gracefully handles missing rates (→ "rate not set"), unknown capacity
+ * (→ "unspecified"), and empty amenities (→ omits the amenities sentence).
+ */
 function formatPool(pool: PoolRow): string {
   const rateParts: string[] = [];
   if (pool.rates?.day != null) rateParts.push(`day rate ₱${pool.rates.day}`);
@@ -63,8 +88,13 @@ function formatPool(pool: PoolRow): string {
 
 /**
  * Builds the chatbot's system prompt from live Supabase data so answers stay
- * accurate as pools/rates/CMS content change. Runs on every request — no
- * caching layer in this version (per the design doc).
+ * accurate as pools/rates/CMS content change.
+ *
+ * KNOWN LIMITATION (deferred follow-up): this runs on EVERY chat message — not
+ * once per conversation — so each follow-up message re-issues these 4 Supabase
+ * queries even though the underlying data rarely changes. Acceptable for launch
+ * volume; revisit with a short-TTL cache (e.g. in-memory or Redis) if chat
+ * traffic grows. Tracked in docs/pr-1-review-fixes.md item #3.
  */
 export async function buildSystemPrompt(): Promise<string> {
   const [pools, contactPage, reservationPage, notePage] = await Promise.all([

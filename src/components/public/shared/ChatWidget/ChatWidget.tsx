@@ -12,15 +12,29 @@ const SUGGESTED_PROMPTS = [
   "What time can we check in?",
 ];
 
+/**
+ * Transport is created once at module scope rather than inside the component:
+ * its config is static, so re-creating it on every render would needlessly
+ * churn the `useChat` hook's transport reference.
+ */
+const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
+
+/**
+ * Floating chat widget for the public site. Renders a toggleable panel in the
+ * bottom-right corner that streams answers from the `/api/chat` endpoint via
+ * the AI SDK's `useChat` hook, plus a few suggested-prompt shortcuts shown when
+ * the conversation is empty.
+ */
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: chatTransport,
   });
 
   const isStreaming = status === "streaming" || status === "submitted";
 
+  /** Sends the typed message and clears the input box. */
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!input.trim()) return;
@@ -28,6 +42,7 @@ export function ChatWidget() {
     setInput("");
   };
 
+  /** Sends a one-tap suggested prompt without touching the input box. */
   const handleSuggestedPrompt = (prompt: string) => {
     sendMessage({ text: prompt });
   };

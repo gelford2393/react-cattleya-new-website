@@ -7,6 +7,11 @@ import { z } from "zod";
  * question). This returns deterministic mock data so the tool-calling flow
  * can be built and tested end-to-end now; swap the body for a real Firebase
  * Admin SDK query once the schema is confirmed.
+ *
+ * ⚠️ NOT CURRENTLY WIRED INTO `api/chat.ts`. Because it always reports a pool
+ * as available, exposing it to real guests would make the assistant give false
+ * booking availability. Only register it in the endpoint's `tools` option once
+ * the real availability lookup below is implemented.
  */
 export const checkAvailabilityTool = tool({
   description:
