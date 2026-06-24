@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 
+const SUGGESTED_PROMPTS = [
+  "What pools do you have?",
+  "What are your rates?",
+  "What time can we check in?",
+];
+
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -22,6 +28,10 @@ export function ChatWidget() {
     setInput("");
   };
 
+  const handleSuggestedPrompt = (prompt: string) => {
+    sendMessage({ text: prompt });
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
       {isOpen && (
@@ -35,9 +45,23 @@ export function ChatWidget() {
 
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
-              <Text className="text-sm text-muted-foreground">
-                Ask me about our pools, rates, or hours!
-              </Text>
+              <div className="space-y-3">
+                <Text className="text-sm text-muted-foreground">
+                  Ask me about our pools, rates, or hours!
+                </Text>
+                <div className="flex flex-col gap-2">
+                  {SUGGESTED_PROMPTS.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => handleSuggestedPrompt(prompt)}
+                      className="rounded-md bg-primary px-3 py-2 text-left text-sm text-primary-foreground hover:opacity-90"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             {messages.map((message) => (
               <div
