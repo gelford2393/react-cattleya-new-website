@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { buildSystemPrompt } from "./_lib/buildSystemPrompt";
 import { checkAvailabilityTool } from "./_lib/checkAvailabilityTool";
@@ -31,6 +31,13 @@ export async function POST(req: Request): Promise<Response> {
     system,
     messages: modelMessages,
     tools: { checkAvailability: checkAvailabilityTool },
+    // streamText defaults to stopping after 1 step (stepCountIs(1)), which would
+    // end the response right after a tool call with no follow-up text — the
+    // guest would see the tool fire but never get an actual answer. The model
+    // observed in manual testing sometimes re-calls the tool more than once
+    // before answering in words, so allow a few steps rather than just one
+    // follow-up, while still bounding the loop.
+    stopWhen: stepCountIs(4),
     // Retry transient provider errors (overload/rate-limit) with the AI SDK's
     // built-in exponential backoff instead of surfacing a generic error.
     maxRetries: 4,
