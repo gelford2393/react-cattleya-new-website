@@ -21,6 +21,50 @@ function stripHtml(html: string): string {
 }
 
 /**
+ * Pulls the `src` of the first `<iframe>` (the Google Maps embed) out of CMS
+ * HTML. `stripHtml` alone would discard the iframe with no trace, leaving the
+ * model with no actual map link to share — so the URL is extracted before
+ * the rest of the markup gets stripped for any surrounding directions text.
+ */
+function extractIframeSrc(html: string): string | null {
+  const match = html.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+  return match?.[1] ?? null;
+}
+
+/**
+ * Resort social links and physical address, kept in sync by hand with the
+ * fallback content in `PublicContactUsPanel.tsx` (the CMS "contact-us" page
+ * normally supersedes this, but the bot should still be able to answer these
+ * specific questions even if that page is empty or unpublished).
+ */
+const FACEBOOK_PAGE_URL = "https://www.facebook.com/cattleyaresort";
+const MESSENGER_URL = "https://m.me/cattleyaresort";
+const RESORT_ADDRESS = "Bo. Colaique, Sitio Ibabaw, Brgy. San Roque, Antipolo City, Philippines";
+
+/**
+ * Built from `RESORT_ADDRESS` rather than pulled from the CMS "location-map"
+ * page: that page only ever contains hand-written driving directions text,
+ * never a Google Maps `<iframe>`, so `extractIframeSrc` below has nothing to
+ * find. A maps search URL guarantees guests always get a clickable map link.
+ */
+const GOOGLE_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(RESORT_ADDRESS)}`;
+
+/**
+ * Today's date in the resort's own timezone (Asia/Manila), as YYYY-MM-DD.
+ *
+ * Without this, the model has no way to resolve relative dates ("today",
+ * "tomorrow", "this weekend") into the absolute YYYY-MM-DD the checkAvailability
+ * tool requires — it would either skip calling the tool for follow-up questions
+ * phrased relatively, or guess a date, both of which can report false
+ * availability. Computed fresh per request (not cached) so it's always correct
+ * across day boundaries; the server's own timezone is irrelevant since this
+ * always asks for Asia/Manila explicitly.
+ */
+function getResortTodayDate(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date());
+}
+
+/**
  * Fetches all pools for grounding the system prompt.
  *
  * On a Supabase error we deliberately degrade gracefully (return `[]`) instead
@@ -91,17 +135,18 @@ function formatPool(pool: PoolRow): string {
  * accurate as pools/rates/CMS content change.
  *
  * KNOWN LIMITATION (deferred follow-up): this runs on EVERY chat message — not
- * once per conversation — so each follow-up message re-issues these 4 Supabase
+ * once per conversation — so each follow-up message re-issues these 5 Supabase
  * queries even though the underlying data rarely changes. Acceptable for launch
  * volume; revisit with a short-TTL cache (e.g. in-memory or Redis) if chat
  * traffic grows. Tracked in docs/pr-1-review-fixes.md item #3.
  */
 export async function buildSystemPrompt(): Promise<string> {
-  const [pools, contactPage, reservationPage, notePage] = await Promise.all([
+  const [pools, contactPage, reservationPage, notePage, locationMapPage] = await Promise.all([
     fetchPools(),
     fetchCmsPage("contact-us"),
     fetchCmsPage("reservation"),
     fetchCmsPage("note"),
+    fetchCmsPage("location-map"),
   ]);
 
   const poolsSection =
@@ -114,14 +159,42 @@ export async function buildSystemPrompt(): Promise<string> {
     .map((page) => `### ${page.title}\n${stripHtml(page.content)}`)
     .join("\n\n");
 
-  return `You are the friendly customer-service assistant for Cattleya Resort.
-Answer guest questions about pools, rates, hours, amenities, and policies using ONLY the information below.
-If you don't know something, say so honestly and suggest the guest contact the resort directly — never invent rates, pools, or policies.
+  const mapEmbedUrl = locationMapPage ? extractIframeSrc(locationMapPage.content) : null;
+  const locationMapText = locationMapPage ? stripHtml(locationMapPage.content) : "";
+
+  const socialAndLocationSection = [
+    `Facebook Page: ${FACEBOOK_PAGE_URL}`,
+    `Messenger: ${MESSENGER_URL}`,
+    `Address: ${RESORT_ADDRESS}`,
+    `Google Maps: ${mapEmbedUrl ?? GOOGLE_MAPS_URL}`,
+    locationMapText ? `Directions notes: ${locationMapText}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return `You are Leya, the friendly customer-service assistant for Cattleya Resort.
+"Leya" is YOUR OWN name, not the guest's. Never address the guest as "Leya" and never sign off or end a message with your own name.
+Answer guest questions about pools, rates, hours, amenities, policies, social links, and location using ONLY the information below.
+If you don't know something, say so honestly and suggest the guest contact the resort directly — never invent rates, pools, policies, or links.
 Keep answers short and conversational.
+
+Today's date is ${getResortTodayDate()} (resort's local time, Asia/Manila). When a guest asks about availability using a relative date ("today", "tomorrow", "this weekend", "next Friday", etc.), convert it to an absolute YYYY-MM-DD date yourself using today's date above before calling checkAvailability — never guess, and never skip calling the tool just because availability was discussed earlier in the conversation. Call checkAvailability again for every new date/pool combination a guest asks about, even as a follow-up.
+
+FORMATTING RULES (the chat UI renders plain text, plus "**bold**" and links — nothing else):
+- The ONLY markdown allowed is "**bold**", used solely for each pool's name + number heading.
+- Never use bullet characters ("*", "-", "•") or "#" headings.
+- When listing pool rates, format each pool exactly like this, with a blank line between pools:
+  **Corazon - Pool 1**
+  Night: ₱17,000
+  Day: ₱15,000
+- Use a blank line between unrelated sections of an answer (e.g. between the rate list and a closing remark).
 
 ## Current Pools & Rates
 ${poolsSection}
 
 ## Resort Policies & Info
-${cmsSections || "No additional policy content is currently published."}`;
+${cmsSections || "No additional policy content is currently published."}
+
+## Social Links & Location
+${socialAndLocationSection}`;
 }
