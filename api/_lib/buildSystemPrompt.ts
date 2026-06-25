@@ -1,4 +1,5 @@
 import { supabaseServer } from "./supabaseServer";
+import { getResortTodayDate } from "./dateUtils";
 
 type PoolRow = {
   id: string;
@@ -48,21 +49,6 @@ const RESORT_ADDRESS = "Bo. Colaique, Sitio Ibabaw, Brgy. San Roque, Antipolo Ci
  * find. A maps search URL guarantees guests always get a clickable map link.
  */
 const GOOGLE_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(RESORT_ADDRESS)}`;
-
-/**
- * Today's date in the resort's own timezone (Asia/Manila), as YYYY-MM-DD.
- *
- * Without this, the model has no way to resolve relative dates ("today",
- * "tomorrow", "this weekend") into the absolute YYYY-MM-DD the checkAvailability
- * tool requires — it would either skip calling the tool for follow-up questions
- * phrased relatively, or guess a date, both of which can report false
- * availability. Computed fresh per request (not cached) so it's always correct
- * across day boundaries; the server's own timezone is irrelevant since this
- * always asks for Asia/Manila explicitly.
- */
-function getResortTodayDate(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date());
-}
 
 /**
  * Fetches all pools for grounding the system prompt.
