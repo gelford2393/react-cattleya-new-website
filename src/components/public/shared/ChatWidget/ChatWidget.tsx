@@ -101,7 +101,7 @@ export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [showGreeting, setShowGreeting] = useState(false);
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: chatTransport,
   });
 
@@ -204,6 +204,11 @@ export function ChatWidget() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Spinner className="size-3.5" />
                     <Text className="text-sm text-muted-foreground">Typing…</Text>
+                  </div>
+                )}
+                {error && (
+                  <div className="mr-auto max-w-[85%] whitespace-pre-line break-words rounded-lg bg-muted px-3 py-2 text-sm">
+                    I'm having trouble answering right now, please try again shortly.
                   </div>
                 )}
               </CardContent>
