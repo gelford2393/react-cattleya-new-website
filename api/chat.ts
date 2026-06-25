@@ -1,6 +1,7 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
-import { google } from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 import { buildSystemPrompt } from "./_lib/buildSystemPrompt";
+import { checkAvailabilityTool } from "./_lib/checkAvailabilityTool";
 
 export const config = {
   runtime: "nodejs",
@@ -10,14 +11,12 @@ export const config = {
  * Streaming chat endpoint for the public-facing Cattleya Resort assistant.
  *
  * Builds a fresh system prompt grounded in live Supabase data (pools, rates,
- * CMS pages) and streams Gemini's response back as a UI message stream that
- * the `useChat` hook on the client consumes.
+ * CMS pages) and streams the model's response (Groq Llama 3.3 70B) back as a
+ * UI message stream that the `useChat` hook on the client consumes.
  *
- * NOTE: The `checkAvailability` tool is intentionally NOT wired in yet. It is
- * still a stub that always reports a pool as available (see
- * `_lib/checkAvailabilityTool.ts`), so exposing it to real guests would let
- * the bot confidently give false booking availability. Re-add it to a `tools`
- * option here only once it performs a real Firestore lookup.
+ * Registers the `checkAvailability` tool so the model can answer real
+ * "is pool X free on date Y" questions via a live Firestore lookup against
+ * the separate cattleyaresort-react booking system (see `_lib/checkAvailabilityTool.ts`).
  */
 export async function POST(req: Request): Promise<Response> {
   const { messages }: { messages: UIMessage[] } = await req.json();
@@ -28,9 +27,13 @@ export async function POST(req: Request): Promise<Response> {
   ]);
 
   const result = streamText({
-    model: google("gemini-2.5-flash"),
+    model: groq("llama-3.3-70b-versatile"),
     system,
     messages: modelMessages,
+    tools: { checkAvailability: checkAvailabilityTool },
+    // Retry transient provider errors (overload/rate-limit) with the AI SDK's
+    // built-in exponential backoff instead of surfacing a generic error.
+    maxRetries: 4,
   });
 
   return result.toUIMessageStreamResponse();
