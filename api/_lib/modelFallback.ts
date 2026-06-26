@@ -1,8 +1,8 @@
 import { groq } from "@ai-sdk/groq";
 import { APICallError, RetryError, type LanguageModel } from "ai";
 
-const PRIMARY_MODEL_ID = "llama-3.3-70b-versatile";
-const FALLBACK_MODEL_ID = "llama-3.1-8b-instant";
+const PRIMARY_MODEL_ID = "openai/gpt-oss-120b";
+const FALLBACK_MODEL_ID = "openai/gpt-oss-20b";
 const DEFAULT_COOLDOWN_SECONDS = 1800;
 
 let primaryCooldownUntil: number | null = null;

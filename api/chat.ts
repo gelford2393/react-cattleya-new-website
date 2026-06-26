@@ -12,9 +12,10 @@ export const config = {
  *
  * Builds a fresh system prompt grounded in live Supabase data (pools, rates,
  * CMS pages) and streams the model's response back as a UI message stream
- * that the `useChat` hook on the client consumes. The model is Groq Llama
- * 3.3 70B by default, automatically falling back to Llama 3.1 8B Instant if
- * the primary model's daily quota is exhausted (see `_lib/modelFallback.ts`).
+ * that the `useChat` hook on the client consumes. The model is Groq's
+ * openai/gpt-oss-120b by default, automatically falling back to
+ * openai/gpt-oss-20b if the primary model's daily quota is exhausted (see
+ * `_lib/modelFallback.ts`).
  *
  * Registers the `checkAvailability` tool so the model can answer real
  * "is pool X free on date Y" questions via a live Firestore lookup against
@@ -33,13 +34,20 @@ export async function POST(req: Request): Promise<Response> {
     system,
     messages: modelMessages,
     tools: { checkAvailability: checkAvailabilityTool },
-    // streamText defaults to stopping after 1 step (stepCountIs(1)), which would
-    // end the response right after a tool call with no follow-up text — the
-    // guest would see the tool fire but never get an actual answer. The model
-    // observed in manual testing sometimes re-calls the tool more than once
-    // before answering in words, so allow a few steps rather than just one
-    // follow-up, while still bounding the loop.
-    stopWhen: stepCountIs(4),
+    // gpt-oss emits a separate reasoning step before each tool call (unlike
+    // the previous Llama models), so a multi-pool availability question can
+    // burn 2 steps (reasoning + tool-call) per pool checked. stepCountIs(4)
+    // was tuned for Llama and was cutting gpt-oss off mid-tool-call with no
+    // final text ever emitted — the guest just saw "Typing..." forever.
+    stopWhen: stepCountIs(10),
+    // Keep gpt-oss's reasoning effort low: this is a customer-facing FAQ/
+    // availability bot, not a complex reasoning task, and "low" cuts the
+    // reasoning-token overhead that was making replies noticeably slower.
+    providerOptions: {
+      groq: {
+        reasoningEffort: "low",
+      },
+    },
     // Retry transient provider errors (overload/rate-limit) with the AI SDK's
     // built-in exponential backoff instead of surfacing a generic error.
     maxRetries: 4,
