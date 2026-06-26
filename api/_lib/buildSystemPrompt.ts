@@ -1,4 +1,5 @@
 import { supabaseServer } from "./supabaseServer";
+import { getResortTodayDate } from "./dateUtils";
 
 type PoolRow = {
   id: string;
@@ -19,6 +20,35 @@ type CmsPageRow = {
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
+
+/**
+ * Pulls the `src` of the first `<iframe>` (the Google Maps embed) out of CMS
+ * HTML. `stripHtml` alone would discard the iframe with no trace, leaving the
+ * model with no actual map link to share — so the URL is extracted before
+ * the rest of the markup gets stripped for any surrounding directions text.
+ */
+function extractIframeSrc(html: string): string | null {
+  const match = html.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+  return match?.[1] ?? null;
+}
+
+/**
+ * Resort social links and physical address, kept in sync by hand with the
+ * fallback content in `PublicContactUsPanel.tsx` (the CMS "contact-us" page
+ * normally supersedes this, but the bot should still be able to answer these
+ * specific questions even if that page is empty or unpublished).
+ */
+const FACEBOOK_PAGE_URL = "https://www.facebook.com/cattleyaresort";
+const MESSENGER_URL = "https://m.me/cattleyaresort";
+const RESORT_ADDRESS = "Bo. Colaique, Sitio Ibabaw, Brgy. San Roque, Antipolo City, Philippines";
+
+/**
+ * Built from `RESORT_ADDRESS` rather than pulled from the CMS "location-map"
+ * page: that page only ever contains hand-written driving directions text,
+ * never a Google Maps `<iframe>`, so `extractIframeSrc` below has nothing to
+ * find. A maps search URL guarantees guests always get a clickable map link.
+ */
+const GOOGLE_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(RESORT_ADDRESS)}`;
 
 /**
  * Fetches all pools for grounding the system prompt.
@@ -91,17 +121,18 @@ function formatPool(pool: PoolRow): string {
  * accurate as pools/rates/CMS content change.
  *
  * KNOWN LIMITATION (deferred follow-up): this runs on EVERY chat message — not
- * once per conversation — so each follow-up message re-issues these 4 Supabase
+ * once per conversation — so each follow-up message re-issues these 5 Supabase
  * queries even though the underlying data rarely changes. Acceptable for launch
  * volume; revisit with a short-TTL cache (e.g. in-memory or Redis) if chat
  * traffic grows. Tracked in docs/pr-1-review-fixes.md item #3.
  */
 export async function buildSystemPrompt(): Promise<string> {
-  const [pools, contactPage, reservationPage, notePage] = await Promise.all([
+  const [pools, contactPage, reservationPage, notePage, locationMapPage] = await Promise.all([
     fetchPools(),
     fetchCmsPage("contact-us"),
     fetchCmsPage("reservation"),
     fetchCmsPage("note"),
+    fetchCmsPage("location-map"),
   ]);
 
   const poolsSection =
@@ -114,14 +145,56 @@ export async function buildSystemPrompt(): Promise<string> {
     .map((page) => `### ${page.title}\n${stripHtml(page.content)}`)
     .join("\n\n");
 
-  return `You are the friendly customer-service assistant for Cattleya Resort.
-Answer guest questions about pools, rates, hours, amenities, and policies using ONLY the information below.
-If you don't know something, say so honestly and suggest the guest contact the resort directly — never invent rates, pools, or policies.
+  const mapEmbedUrl = locationMapPage ? extractIframeSrc(locationMapPage.content) : null;
+  const locationMapText = locationMapPage ? stripHtml(locationMapPage.content) : "";
+
+  const socialAndLocationSection = [
+    `Facebook Page: ${FACEBOOK_PAGE_URL}`,
+    `Messenger: ${MESSENGER_URL}`,
+    `Address: ${RESORT_ADDRESS}`,
+    `Google Maps: ${mapEmbedUrl ?? GOOGLE_MAPS_URL}`,
+    locationMapText ? `Directions notes: ${locationMapText}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return `You are Leya, the friendly customer-service assistant for Cattleya Resort.
+"Leya" is YOUR OWN name, not the guest's. Never address the guest as "Leya" and never sign off or end a message with your own name.
+Answer guest questions about pools, rates, hours, amenities, policies, social links, and location using ONLY the information below.
+If you don't know something, say so honestly and suggest the guest contact the resort directly — never invent rates, pools, policies, or links.
 Keep answers short and conversational.
+
+Today's date is ${getResortTodayDate()} (resort's local time, Asia/Manila). When a guest asks about availability using a relative date ("today", "tomorrow", "this weekend", "next Friday", etc.), convert it to an absolute YYYY-MM-DD date yourself using today's date above before calling checkAvailability — never guess, and never skip calling the tool just because availability was discussed earlier in the conversation. Call checkAvailability again for every new date/pool combination a guest asks about, even as a follow-up.
+
+## Booking Types & Hours
+Day: 9:00 AM – 5:00 PM (same day)
+Night: 7:00 PM – 7:00 AM (the next day)
+Straight AM: 9:00 AM – 7:00 AM (the next day) — combined day + night
+Straight PM: 7:00 PM – 5:00 PM (the next day) — combined night + day
+
+When a guest signals they want to book (not just asking about rates), ask for: how many guests (pax), the date, and which stay type (day, night, or straight). If they say "straight" without specifying morning or evening, ask which — Straight AM (9am-7am) or Straight PM (7pm-5pm) — before checking availability. Once you have the date and stay type, call checkAvailability with the matching stayType ("DAY", "NIGHT", "STRAIGHT_AM", or "STRAIGHT_PM"). Compare the guest's pax count to the pool's capacity (see Current Pools & Rates below) and mention if the group exceeds it. After confirming availability, remind the guest this chat does not finalize the booking — direct them to the resort's actual reservation process to complete it.
+
+## Reporting Availability Results
+Never narrate your own reasoning, date conversion, or tool-calling process in a reply — guests only see the final answer.
+When a guest asks generally if pools are available (no specific pool named) for a given date and stay type, you MUST call checkAvailability separately for every pool listed in Current Pools & Rates below before answering — never state or imply a pool is available without having just called the tool for it. Only after all those calls return should you report ONLY the pools whose result was "available". Do not mention pools that came back booked unless the guest specifically asks about that pool or asks why a pool is missing.
+If a guest asks directly about a specific pool that is booked, tell them firmly that it is already taken/booked for that date and stay type — do not soften it or explain availability of other pools unless asked.
+Keep the availability answer itself short and direct: state which pool(s) are available (or that the requested pool is booked), then ask if they'd like to proceed — skip restating the date or stay type back to the guest unless it's needed for clarity.
+
+FORMATTING RULES (the chat UI renders plain text, plus "**bold**" and links — nothing else):
+- The ONLY markdown allowed is "**bold**", used solely for each pool's name + number heading.
+- Never use bullet characters ("*", "-", "•") or "#" headings.
+- When listing pool rates, format each pool exactly like this, with a blank line between pools:
+  **Corazon - Pool 1**
+  Night: ₱17,000
+  Day: ₱15,000
+- Use a blank line between unrelated sections of an answer (e.g. between the rate list and a closing remark).
 
 ## Current Pools & Rates
 ${poolsSection}
 
 ## Resort Policies & Info
-${cmsSections || "No additional policy content is currently published."}`;
+${cmsSections || "No additional policy content is currently published."}
+
+## Social Links & Location
+${socialAndLocationSection}`;
 }
