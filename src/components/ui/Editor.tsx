@@ -187,12 +187,12 @@ export const Editor = forwardRef<EditorHandle, RichEditorProps>(function Editor(
       ) : (
         <TinyMCEEditor
           tinymceScriptSrc="/tinymce/tinymce.min.js"
+          licenseKey="gpl"
           value={value}
           onInit={(_evt, editor) => {
             editorRef.current = editor;
           }}
           init={{
-            license_key: 'gpl',
             height,
             menubar: false,
             plugins: uploadsEnabled ? DEFAULT_PLUGINS : TEXT_ONLY_PLUGINS,

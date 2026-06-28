@@ -46,6 +46,7 @@ firebase-adminsdk*.json
 
 # Agent tooling artifacts
 .agents/
+.playwright-mcp/
 
 # Local interview notes
 INTERVIEW_PRESENTATION.md
