@@ -1,8 +1,8 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { bookingSystemFirestore } from "./firebaseAdmin";
-import { supabaseServer } from "./supabaseServer";
-import { addDays } from "./dateUtils";
+import { bookingSystemFirestore } from "./firebaseAdmin.js";
+import { supabaseServer } from "./supabaseServer.js";
+import { addDays } from "./dateUtils.js";
 
 type SlotStatus = "PENDING" | "BOOKED" | "CANCELLED" | "PENCIL";
 
