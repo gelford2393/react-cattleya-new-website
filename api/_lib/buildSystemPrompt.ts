@@ -117,16 +117,36 @@ function formatPool(pool: PoolRow): string {
 }
 
 /**
+ * How long a built system prompt is reused before it's rebuilt from Supabase.
+ * Pools/rates/CMS content change rarely, so a short window removes the 5
+ * per-message Supabase queries from almost every follow-up while keeping the
+ * prompt fresh enough that a CMS edit shows up within seconds. Also bounds how
+ * long the embedded "today's date" can go stale around midnight (negligible).
+ */
+const SYSTEM_PROMPT_TTL_MS = 60_000;
+
+/**
+ * Module-scope cache of the last built prompt, reused across invocations on a
+ * warm serverless instance (Fluid Compute reuses instances, so this is hit
+ * often in practice). A cold instance simply rebuilds on its first request.
+ */
+let cachedPrompt: { value: string; expiresAt: number } | null = null;
+
+/**
  * Builds the chatbot's system prompt from live Supabase data so answers stay
  * accurate as pools/rates/CMS content change.
  *
- * KNOWN LIMITATION (deferred follow-up): this runs on EVERY chat message — not
- * once per conversation — so each follow-up message re-issues these 5 Supabase
- * queries even though the underlying data rarely changes. Acceptable for launch
- * volume; revisit with a short-TTL cache (e.g. in-memory or Redis) if chat
- * traffic grows. Tracked in docs/pr-1-review-fixes.md item #3.
+ * Results are cached in-memory for `SYSTEM_PROMPT_TTL_MS` so follow-up messages
+ * in a conversation don't each re-issue the 5 Supabase queries below — the
+ * dominant per-message latency for simple (non-tool) replies. This was the
+ * deferred follow-up tracked in docs/pr-1-review-fixes.md item #3.
  */
 export async function buildSystemPrompt(): Promise<string> {
+  const now = Date.now();
+  if (cachedPrompt && cachedPrompt.expiresAt > now) {
+    return cachedPrompt.value;
+  }
+
   const [pools, contactPage, reservationPage, notePage, locationMapPage] = await Promise.all([
     fetchPools(),
     fetchCmsPage("contact-us"),
@@ -158,7 +178,7 @@ export async function buildSystemPrompt(): Promise<string> {
     .filter(Boolean)
     .join("\n");
 
-  return `You are Leya, the friendly customer-service assistant for Cattleya Resort.
+  const prompt = `You are Leya, the friendly customer-service assistant for Cattleya Resort.
 "Leya" is YOUR OWN name, not the guest's. Never address the guest as "Leya" and never sign off or end a message with your own name.
 Answer guest questions about pools, rates, hours, amenities, policies, social links, and location using ONLY the information below.
 If you don't know something, say so honestly and suggest the guest contact the resort directly — never invent rates, pools, policies, or links.
@@ -199,4 +219,7 @@ ${cmsSections || "No additional policy content is currently published."}
 
 ## Social Links & Location
 ${socialAndLocationSection}`;
+
+  cachedPrompt = { value: prompt, expiresAt: now + SYSTEM_PROMPT_TTL_MS };
+  return prompt;
 }

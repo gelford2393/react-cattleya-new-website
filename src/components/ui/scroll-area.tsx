@@ -16,7 +16,13 @@ function ScrollArea({
     >
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+        // `[&>div]:!block` overrides the inline `display: table` that Radix
+        // sets on the viewport's inner content wrapper. As `table`, that
+        // wrapper shrink-wraps to its content's intrinsic width, so any
+        // percentage/auto-margin layout inside (e.g. chat bubbles using
+        // `max-w-[85%]` + `ml-auto`) resolves against the content width and
+        // can overflow the panel. Forcing `block` makes it fill the viewport.
+        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 [&>div]:!block"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
