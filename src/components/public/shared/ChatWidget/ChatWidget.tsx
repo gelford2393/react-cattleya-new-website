@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { MessageCircle, X, Send } from "lucide-react";
@@ -108,6 +108,22 @@ export function ChatWidget() {
   const isStreaming = status === "streaming" || status === "submitted";
 
   /**
+   * Sentinel element rendered after the last message. We scroll it into view
+   * whenever the conversation changes so the newest reply is always visible
+   * without the guest having to scroll the panel manually.
+   */
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Pins the scroll position to the bottom on every conversation update. The
+   * `messages` array reference changes on each streamed token, so this also
+   * keeps the view glued to the bottom while a reply is still streaming in.
+   */
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ block: "end" });
+  }, [messages, isStreaming, error]);
+
+  /**
    * Shows the "Leya" greeting bubble a couple seconds after the page loads,
    * then auto-dismisses it. Skipped entirely once the guest has opened the
    * chat at least once, so it doesn't keep reappearing mid-conversation.
@@ -211,6 +227,7 @@ export function ChatWidget() {
                     I'm having trouble answering right now, please try again shortly.
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </CardContent>
             </ScrollArea>
             <Separator />
