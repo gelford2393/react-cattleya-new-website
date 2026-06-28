@@ -1,5 +1,5 @@
-import { supabaseServer } from "./supabaseServer";
-import { getResortTodayDate } from "./dateUtils";
+import { supabaseServer } from "./supabaseServer.js";
+import { getResortTodayDate } from "./dateUtils.js";
 
 type PoolRow = {
   id: string;
