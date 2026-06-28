@@ -1,8 +1,8 @@
 import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from "ai";
-import { buildSystemPrompt } from "./_lib/buildSystemPrompt";
-import { checkAvailabilityTool } from "./_lib/checkAvailabilityTool";
-import { getChatModel, recordStreamError } from "./_lib/modelFallback";
-import { isOriginAllowed, checkPayloadLimits } from "./_lib/requestGuards";
+import { buildSystemPrompt } from "./_lib/buildSystemPrompt.js";
+import { checkAvailabilityTool } from "./_lib/checkAvailabilityTool.js";
+import { getChatModel, recordStreamError } from "./_lib/modelFallback.js";
+import { isOriginAllowed, checkPayloadLimits } from "./_lib/requestGuards.js";
 
 export const config = {
   runtime: "nodejs",

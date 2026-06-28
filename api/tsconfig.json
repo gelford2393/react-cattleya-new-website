@@ -1,0 +1,23 @@
+{
+  // Standalone config for the Vercel serverless functions in this directory.
+  // These are NOT part of the Vite app build (tsconfig.app/node) — Vercel's
+  // @vercel/node compiles each function on its own. Because the root
+  // package.json sets "type": "module", the functions run as Node ESM, where
+  // relative imports MUST carry an explicit ".js" extension. NodeNext module
+  // resolution mirrors that at type-check time, so an extensionless import
+  // (which builds fine under `vercel dev` but crashes the deployed Lambda with
+  // ERR_MODULE_NOT_FOUND) is now a compile error instead of a prod incident.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["**/*.ts"]
+}
